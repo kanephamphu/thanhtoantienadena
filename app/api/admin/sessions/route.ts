@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { parseVNTDateTime } from "@/lib/calculations";
 
 export async function GET() {
   try {
@@ -38,8 +39,8 @@ export async function POST(request: Request) {
     const session = await prisma.workSession.create({
       data: {
         userId,
-        startAt: new Date(startAt),
-        endAt: new Date(endAt),
+        startAt: parseVNTDateTime(startAt),
+        endAt: parseVNTDateTime(endAt),
         hourlyRate: Number(hourlyRate),
         adenaRate: Number(adenaRate),
         adenaUnit: Number(adenaUnit),
@@ -65,8 +66,8 @@ export async function PUT(request: Request) {
       where: { id },
       data: {
         userId,
-        startAt: new Date(startAt),
-        endAt: new Date(endAt),
+        startAt: parseVNTDateTime(startAt),
+        endAt: parseVNTDateTime(endAt),
         hourlyRate: Number(hourlyRate),
         adenaRate: Number(adenaRate),
         adenaUnit: Number(adenaUnit),

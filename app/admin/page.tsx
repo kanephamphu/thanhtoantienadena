@@ -20,7 +20,7 @@ import {
   History,
   Users
 } from "lucide-react";
-import { formatCurrency, formatDateTime, formatNumber } from "@/lib/calculations";
+import { formatCurrency, formatDateTime, formatNumber, formatTime, formatVNTDateTimeInput, getSessionIncome } from "@/lib/calculations";
 import Link from "next/link";
 
 import { useRouter } from "next/navigation";
@@ -58,7 +58,7 @@ export default function AdminPage() {
   const [paymentForm, setPaymentForm] = useState({
     userId: "",
     amount: 0,
-    paidAt: new Date().toISOString().slice(0, 16),
+    paidAt: formatVNTDateTimeInput(),
     note: "",
     commission: 60,
     sessionIds: [] as string[]
@@ -258,8 +258,8 @@ export default function AdminPage() {
     setSessionForm({
       id: session.id,
       userId: session.userId,
-      startAt: new Date(session.startAt).toISOString().slice(0, 16),
-      endAt: new Date(session.endAt).toISOString().slice(0, 16),
+      startAt: formatVNTDateTimeInput(session.startAt),
+      endAt: formatVNTDateTimeInput(session.endAt),
       hourlyRate: session.hourlyRate,
       adenaRate: session.adenaRate,
       adenaUnit: session.adenaUnit,
@@ -414,7 +414,7 @@ export default function AdminPage() {
           </div>
           <p>Quản lý thành viên, nhập liệu ca cày và đối soát thanh toán.</p>
         </div>
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div className="page-actions">
           <Link href="/">
             <button className="secondary"><LayoutDashboard size={18} /> Public View</button>
           </Link>
@@ -424,9 +424,9 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: "32px" }}>
+      <div className="admin-layout">
         <aside className="animate-fade-in">
-          <nav style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <nav className="admin-tab-nav">
             <button
               className={activeTab === "sessions" ? "" : "secondary"}
               onClick={() => setActiveTab("sessions")}
@@ -470,7 +470,7 @@ export default function AdminPage() {
             <div style={{ display: "grid", gap: "24px" }}>
               <div className="card">
                 <h3 className="font-heading"><Plus size={18} /> Nhập ca cày mới</h3>
-                <form onSubmit={handleAddSession} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "20px" }}>
+                <form onSubmit={handleAddSession} className="admin-form-grid" style={{ marginTop: "20px" }}>
                   <div style={{ gridColumn: "1 / -1" }}>
                     <label>Thành viên</label>
                     <select value={sessionForm.userId} onChange={e => setSessionForm({ ...sessionForm, userId: e.target.value })}>
@@ -510,7 +510,7 @@ export default function AdminPage() {
                       <label htmlFor="isPaid" style={{ marginBottom: 0 }}>Đã thanh toán (Manual Override)</label>
                     </div>
                   )}
-                  <div style={{ gridColumn: "1 / -1", display: "flex", gap: "12px" }}>
+                  <div className="button-row" style={{ gridColumn: "1 / -1" }}>
                     <button type="submit" disabled={loading} style={{ flex: 1 }}>
                       <Save size={18} /> {loading ? "Đang lưu..." : (sessionForm.id ? "Cập nhật ca cày" : "Lưu ca cày")}
                     </button>
@@ -529,9 +529,9 @@ export default function AdminPage() {
               </div>
 
               <div className="card">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <div className="card-toolbar" style={{ marginBottom: "20px" }}>
                   <h3 className="font-heading" style={{ margin: 0 }}>Lịch sử & Đối soát thanh toán</h3>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div className="toolbar-inline">
                     <span className="text-muted">Chọn Thành viên:</span>
                     <select
                       value={selectedEmployee}
@@ -545,7 +545,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="stats-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)", marginBottom: "24px" }}>
+                <div className="stats-grid compact-stats" style={{ marginBottom: "24px" }}>
                   <div className="card" style={{ background: "rgba(255,255,255,0.05)", padding: "16px" }}>
                     <div className="stat-label">Tổng Adena cày được</div>
                     <div className="stat-value" style={{ fontSize: "1.5rem" }}>{formatNumber(employeeSummary.totalAdena)}</div>
@@ -556,8 +556,8 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <div>
+                  <table className="mobile-table">
                     <thead>
                       <tr className="text-muted" style={{ textAlign: "left", fontSize: "0.85rem" }}>
                         <th style={{ padding: "12px" }}>Bắt đầu</th>
@@ -571,21 +571,18 @@ export default function AdminPage() {
                     <tbody>
                       {filteredSessions.map(s => (
                         <tr key={s.id} style={{ borderTop: "1px solid var(--panel-border)" }}>
-                          <td style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.startAt)}</td>
-                          <td style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.endAt)}</td>
-                          <td style={{ padding: "12px" }}>{formatNumber(s.endAdena - s.startAdena)}</td>
-                          <td style={{ padding: "12px" }}>
-                            {formatCurrency(
-                              ((s.endAdena - s.startAdena) / (s.adenaUnit || 10000) * (s.adenaRate || 25000)) +
-                              ((new Date(s.endAt).getTime() - new Date(s.startAt).getTime()) / 3600000 * (s.hourlyRate || 0))
-                            )}
+                          <td data-label="Bắt đầu" style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.startAt)}</td>
+                          <td data-label="Kết thúc" style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.endAt)}</td>
+                          <td data-label="Adena" style={{ padding: "12px" }}>{formatNumber(s.endAdena - s.startAdena)}</td>
+                          <td data-label="Tiền công" style={{ padding: "12px" }}>
+                            {formatCurrency(getSessionIncome(s))}
                           </td>
-                          <td style={{ padding: "12px" }}>
+                          <td data-label="Trạng thái" style={{ padding: "12px" }}>
                             <span className={`rank-badge ${s.isPaid ? 'success' : 'warning'}`} style={{ width: "auto", fontSize: "0.7rem", padding: "2px 8px" }}>
                               {s.isPaid ? 'ĐÃ TRẢ' : 'CHƯA TRẢ'}
                             </span>
                           </td>
-                          <td style={{ padding: "12px", textAlign: "right" }}>
+                          <td data-label="Thao tác" className="mobile-table-actions" style={{ padding: "12px", textAlign: "right" }}>
                             <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
                               <button
                                 onClick={() => handleEditSession(s)}
@@ -620,9 +617,9 @@ export default function AdminPage() {
           {activeTab === "payments" && (
             <div style={{ display: "grid", gap: "24px" }}>
               <div className="card">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <div className="card-toolbar" style={{ marginBottom: "20px" }}>
                   <h3 className="font-heading" style={{ margin: 0 }}><DollarSign size={18} /> Đối soát & Thanh toán (Payroll)</h3>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div className="toolbar-inline">
                     <span className="text-muted">Chọn Thành viên:</span>
                     <select
                       value={selectedEmployee}
@@ -643,8 +640,8 @@ export default function AdminPage() {
                   <p className="text-muted" style={{ fontSize: "0.9rem", marginBottom: "16px" }}>
                     Chọn các ca cày chưa thanh toán của <strong>{users.find(u => u.id === selectedEmployee)?.name}</strong> để lập bảng lương.
                   </p>
-                  <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <div>
+                    <table className="mobile-table">
                       <thead>
                         <tr className="text-muted" style={{ textAlign: "left", fontSize: "0.85rem" }}>
                           <th style={{ padding: "12px", width: "40px" }}>
@@ -664,10 +661,10 @@ export default function AdminPage() {
                       </thead>
                       <tbody>
                         {unpaidSessions.map(s => {
-                          const gross = (s.endAdena - s.startAdena) / s.adenaUnit * s.adenaRate + (new Date(s.endAt).getTime() - new Date(s.startAt).getTime()) / 3600000 * s.hourlyRate;
+                          const gross = getSessionIncome(s);
                           return (
                             <tr key={s.id} style={{ borderTop: "1px solid var(--panel-border)" }}>
-                              <td style={{ padding: "12px" }}>
+                              <td data-label="Chọn" style={{ padding: "12px" }}>
                                 <input
                                   type="checkbox"
                                   checked={selectedSessions.includes(s.id)}
@@ -677,9 +674,9 @@ export default function AdminPage() {
                                   }}
                                 />
                               </td>
-                              <td style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.startAt)} - {formatDateTime(s.endAt).split(' ')[1]}</td>
-                              <td style={{ padding: "12px" }}>{formatNumber(s.endAdena - s.startAdena)}</td>
-                              <td style={{ padding: "12px" }}>{formatCurrency(gross)}</td>
+                              <td data-label="Thời gian" style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.startAt)} - {formatTime(s.endAt)}</td>
+                              <td data-label="Adena" style={{ padding: "12px" }}>{formatNumber(s.endAdena - s.startAdena)}</td>
+                              <td data-label="Gross Income" style={{ padding: "12px" }}>{formatCurrency(gross)}</td>
                             </tr>
                           );
                         })}
@@ -693,8 +690,8 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", paddingTop: "24px", borderTop: "2px solid var(--panel-border)" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div className="payroll-grid" style={{ paddingTop: "24px", borderTop: "2px solid var(--panel-border)" }}>
+                  <div className="payroll-input-grid">
                     <div>
                       <label>Rate 10k Adena (VND)</label>
                       <input
@@ -738,7 +735,7 @@ export default function AdminPage() {
                     <div style={{ fontSize: "1.5rem", fontWeight: 900, textAlign: "right", color: "var(--accent)", marginBottom: "20px" }}>
                       {formatCurrency(finalAmount)}
                     </div>
-                    <div style={{ display: "flex", gap: "12px" }}>
+                    <div className="button-row">
                       <button onClick={handleAddPayment} disabled={loading || selectedSessions.length === 0} style={{ flex: 2 }}>
                         <Save size={18} /> {loading ? "Đang xử lý..." : "Xác nhận & Chốt ca"}
                       </button>

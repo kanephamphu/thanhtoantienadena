@@ -1,6 +1,82 @@
 import { AppState, DailySeriesItem, PaymentRecord, UserSummary, WorkSession } from "@/lib/types";
 
 const millisecondsPerHour = 1000 * 60 * 60;
+export const VNT_TIME_ZONE = "Asia/Ho_Chi_Minh";
+const VNT_OFFSET = "+07:00";
+
+const vntDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: VNT_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+});
+
+const vntDateTimeFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: VNT_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23"
+});
+
+const vntTimeFormatter = new Intl.DateTimeFormat("en-GB", {
+  timeZone: VNT_TIME_ZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23"
+});
+
+function toDate(value: string | Date) {
+  return value instanceof Date ? value : new Date(value);
+}
+
+function getParts(
+  formatter: Intl.DateTimeFormat,
+  value: Date
+) {
+  const parts = formatter.formatToParts(value);
+  return {
+    year: parts.find((part) => part.type === "year")?.value ?? "0000",
+    month: parts.find((part) => part.type === "month")?.value ?? "01",
+    day: parts.find((part) => part.type === "day")?.value ?? "01",
+    hour: parts.find((part) => part.type === "hour")?.value ?? "00",
+    minute: parts.find((part) => part.type === "minute")?.value ?? "00"
+  };
+}
+
+function normalizeVNTInput(value: string) {
+  if (/[zZ]$|[+-]\d{2}:\d{2}$/.test(value)) {
+    return value;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return `${value}T00:00:00${VNT_OFFSET}`;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
+    return `${value}:00${VNT_OFFSET}`;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?$/.test(value)) {
+    return `${value}${VNT_OFFSET}`;
+  }
+
+  return value;
+}
+
+export function parseVNTDateTime(value: string) {
+  return new Date(normalizeVNTInput(value));
+}
+
+export function parseVNTDateStart(value: string) {
+  return parseVNTDateTime(`${value}T00:00:00`);
+}
+
+export function parseVNTDateEnd(value: string) {
+  return parseVNTDateTime(`${value}T23:59:59.999`);
+}
 
 export function formatCurrency(value: number) {
   return new Intl.NumberFormat("vi-VN", {
@@ -16,17 +92,60 @@ export function formatNumber(value: number) {
   }).format(value);
 }
 
-export function formatDateTime(value: string) {
+export function formatDateTime(value: string | Date) {
   return new Intl.DateTimeFormat("vi-VN", {
     dateStyle: "short",
-    timeStyle: "short"
-  }).format(new Date(value));
+    timeStyle: "short",
+    timeZone: VNT_TIME_ZONE
+  }).format(toDate(value));
 }
 
-export function formatDate(value: string) {
+export function formatDate(value: string | Date) {
   return new Intl.DateTimeFormat("vi-VN", {
-    dateStyle: "short"
-  }).format(new Date(value));
+    dateStyle: "short",
+    timeZone: VNT_TIME_ZONE
+  }).format(toDate(value));
+}
+
+export function formatTime(value: string | Date) {
+  return vntTimeFormatter.format(toDate(value));
+}
+
+export function formatVNTDateInput(value: string | Date = new Date()) {
+  const { year, month, day } = getParts(vntDateFormatter, toDate(value));
+  return `${year}-${month}-${day}`;
+}
+
+export function formatVNTDateTimeInput(value: string | Date = new Date()) {
+  const { year, month, day, hour, minute } = getParts(vntDateTimeFormatter, toDate(value));
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
+export function formatDisplayDateKey(value: string, includeYear = false) {
+  const [year, month, day] = value.split("-");
+  if (!year || !month || !day) {
+    return value;
+  }
+
+  return includeYear ? `${day}/${month}/${year}` : `${day}/${month}`;
+}
+
+export function toVNTDateKey(value: string | Date) {
+  return formatVNTDateInput(value);
+}
+
+export function addDaysToDateKey(value: string, days: number) {
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day + days));
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+}
+
+export function getCurrentVNTWeekStart(value: string | Date = new Date()) {
+  const dateKey = formatVNTDateInput(value);
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+  const offset = (weekday + 6) % 7;
+  return addDaysToDateKey(dateKey, -offset);
 }
 
 export function getSessionHours(session: WorkSession) {
@@ -78,7 +197,7 @@ export function buildDailySeries(state: AppState): DailySeriesItem[] {
   const dailyMap = new Map<string, DailySeriesItem>();
 
   state.sessions.forEach((session) => {
-    const day = session.startAt.slice(0, 10);
+    const day = toVNTDateKey(session.startAt);
     const current = dailyMap.get(day) ?? {
       day,
       totalAdena: 0,
@@ -98,7 +217,7 @@ export function buildUserDailyData(state: AppState) {
 
   state.sessions.forEach((session) => {
     const userId = session.userId;
-    const day = session.startAt.slice(0, 10);
+    const day = toVNTDateKey(session.startAt);
     
     if (!userDailyMap.has(userId)) {
       userDailyMap.set(userId, new Map());
@@ -125,12 +244,8 @@ export function buildUserDailyData(state: AppState) {
 }
 
 export function buildWeeklyRanking(state: AppState) {
-  const now = new Date();
-  const currentWeekStart = new Date(now);
-  currentWeekStart.setHours(0, 0, 0, 0);
-  currentWeekStart.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-
-  const currentWeekSessions = state.sessions.filter((session) => new Date(session.startAt) >= currentWeekStart);
+  const currentWeekStart = getCurrentVNTWeekStart();
+  const currentWeekSessions = state.sessions.filter((session) => toVNTDateKey(session.startAt) >= currentWeekStart);
 
   return state.users
     .filter((user) => user.active && user.role === "member")

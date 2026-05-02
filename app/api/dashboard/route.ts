@@ -5,28 +5,18 @@ import {
   buildDailySeries, 
   buildUserDailyData,
   buildWeeklyRanking, 
-  buildLeaderboardDelta 
+  buildLeaderboardDelta,
+  parseVNTDateEnd,
+  parseVNTDateStart
 } from "@/lib/calculations";
-
-function parseStartOfDay(value: string) {
-  const date = new Date(`${value}T00:00:00`);
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-function parseEndOfDay(value: string) {
-  const date = new Date(`${value}T00:00:00`);
-  date.setHours(23, 59, 59, 999);
-  return date;
-}
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const from = searchParams.get("from");
     const to = searchParams.get("to");
-    const fromDate = from ? parseStartOfDay(from) : null;
-    const toDate = to ? parseEndOfDay(to) : null;
+    const fromDate = from ? parseVNTDateStart(from) : null;
+    const toDate = to ? parseVNTDateEnd(to) : null;
 
     const dateFilter = fromDate && toDate
       ? {

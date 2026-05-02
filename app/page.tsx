@@ -6,7 +6,7 @@ import { ChevronRight, Coins, Download, TrendingUp, Users } from "lucide-react";
 import { EarningsChart } from "@/components/dashboard/EarningsChart";
 import { Leaderboard } from "@/components/dashboard/Leaderboard";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { formatCurrency, formatNumber } from "@/lib/calculations";
+import { addDaysToDateKey, formatCurrency, formatDisplayDateKey, formatNumber, formatVNTDateInput } from "@/lib/calculations";
 import { DailySeriesItem, UserDailySeriesMap } from "@/lib/types";
 
 type DashboardUser = {
@@ -52,30 +52,19 @@ type DashboardResponse = {
 const chartPalette = ["#f59e0b", "#38bdf8", "#34d399", "#f87171", "#a78bfa", "#f472b6"];
 const chartDashPatterns = ["0", "8 4", "3 4", "10 6", "2 6", "12 4 3 4"];
 
-function formatDateInput(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
+// formatVNTDateInput imported from lib/calculations.ts
 
 function formatDisplayDay(value: string) {
-  const [year, month, day] = value.split("-");
-  if (!year || !month || !day) {
-    return value;
-  }
-
-  return `${day}/${month}/${year}`;
+  return formatDisplayDateKey(value, true);
 }
 
 function buildDateRange(start: string, end: string) {
   const result: string[] = [];
-  const current = new Date(`${start}T00:00:00`);
-  const endDate = new Date(`${end}T00:00:00`);
+  let current = start;
 
-  while (current <= endDate) {
-    result.push(formatDateInput(current));
-    current.setDate(current.getDate() + 1);
+  while (current <= end) {
+    result.push(current);
+    current = addDaysToDateKey(current, 1);
   }
 
   return result;
@@ -92,12 +81,10 @@ export default function PublicDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedUserId, setSelectedUserId] = useState("all");
   const [from, setFrom] = useState(() => {
-    const today = new Date();
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(today.getDate() - 7);
-    return formatDateInput(sevenDaysAgo);
+    const today = formatVNTDateInput();
+    return addDaysToDateKey(today, -7);
   });
-  const [to, setTo] = useState(() => formatDateInput(new Date()));
+  const [to, setTo] = useState(() => formatVNTDateInput());
 
   useEffect(() => {
     async function fetchData() {
@@ -227,24 +214,24 @@ export default function PublicDashboard() {
   return (
     <main className="shell">
       <header className="hero animate-fade-in">
-        <div style={{ display: "inline-flex", padding: "6px 12px", background: "var(--accent-glow)", borderRadius: "99px", color: "var(--accent)", fontWeight: 700, fontSize: "0.8rem", marginBottom: "16px" }}>
+        <div className="public-hero-chip">
           L2 ADENA SYSTEM
         </div>
         <h1>Thống kê & Bảng xếp hạng</h1>
         <p>Theo dõi hiệu suất cày Adena của các thành viên trong nhóm theo thời gian thực.</p>
 
         <div className="dashboard-toolbar">
-          <div className="dashboard-filter-group">
+          <div className="dashboard-filter-group public-filter-panel">
             <div>
-              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px", display: "block" }}>Từ ngày</label>
+              <label className="public-filter-label">Từ ngày</label>
               <input type="date" value={from} max={to} onChange={(e) => setFrom(e.target.value)} />
             </div>
             <div>
-              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px", display: "block" }}>Đến ngày</label>
+              <label className="public-filter-label">Đến ngày</label>
               <input type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} />
             </div>
             <div>
-              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px", display: "block" }}>Thành viên</label>
+              <label className="public-filter-label">Thành viên</label>
               <select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
                 <option value="all">Toàn đội</option>
                 {dashboardData.users.map((user) => (
@@ -255,7 +242,7 @@ export default function PublicDashboard() {
               </select>
             </div>
             <div>
-              <label style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px", display: "block" }}>Xuất dữ liệu</label>
+              <label className="public-filter-label">Xuất dữ liệu</label>
               <button className="secondary" onClick={handleExportCsv}>
                 <Download size={18} />
                 Export CSV
@@ -263,7 +250,7 @@ export default function PublicDashboard() {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
+          <div className="page-actions public-cta-row">
             <Link href="/login">
               <button style={{ padding: "10px 20px" }}>
                 Đăng nhập <ChevronRight size={18} />
@@ -299,25 +286,25 @@ export default function PublicDashboard() {
         />
       </section>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "20px" }}>
+      <div className="dashboard-content-grid">
         <section>
           <EarningsChart data={chartData} lines={chartLines} title={chartTitle} subtitle={chartSubtitle} />
 
           <div className="card" style={{ marginTop: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", marginBottom: "16px", flexWrap: "wrap" }}>
+            <div className="public-section-header">
               <div>
                 <h3 className="font-heading" style={{ margin: 0 }}>Dữ liệu theo ngày</h3>
                 <p className="text-muted" style={{ margin: "6px 0 0", fontSize: "0.9rem" }}>
                   {selectedUser ? `Chi tiết cày hằng ngày của ${selectedUser.name}` : "So sánh Adena theo ngày của từng thành viên"}
                 </p>
               </div>
-              <div className="text-muted" style={{ fontSize: "0.85rem" }}>
+              <div className="text-muted public-date-range">
                 {formatDisplayDay(from)} - {formatDisplayDay(to)}
               </div>
             </div>
 
             <div className="data-table-wrapper">
-              <table className="data-table">
+              <table className="data-table public-data-table">
                 <thead>
                   <tr>
                     <th>Ngày</th>
@@ -336,15 +323,15 @@ export default function PublicDashboard() {
                 <tbody>
                   {dateRange.map((day) => (
                     <tr key={`${selectedUserId}-${day}`}>
-                      <td>{formatDisplayDay(day)}</td>
+                      <td data-label="Ngày">{formatDisplayDay(day)}</td>
                       {selectedUser ? (
                         <>
-                          <td>{formatNumber(selectedSeries.find((item) => item.day === day)?.totalAdena ?? 0)}</td>
-                          <td>{formatCurrency(selectedSeries.find((item) => item.day === day)?.totalIncome ?? 0)}</td>
+                          <td data-label="Adena">{formatNumber(selectedSeries.find((item) => item.day === day)?.totalAdena ?? 0)}</td>
+                          <td data-label="Tiền công">{formatCurrency(selectedSeries.find((item) => item.day === day)?.totalIncome ?? 0)}</td>
                         </>
                       ) : (
                         dashboardData.users.map((user) => (
-                          <td key={`${day}-${user.id}`}>
+                          <td key={`${day}-${user.id}`} data-label={user.name}>
                             {formatNumber(dashboardData.userDailyData[user.id]?.find((item) => item.day === day)?.totalAdena ?? 0)}
                           </td>
                         ))

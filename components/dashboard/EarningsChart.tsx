@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDisplayDateKey } from "@/lib/calculations";
 import {
   CartesianGrid,
   Legend,
@@ -32,8 +33,8 @@ export function EarningsChart({
   subtitle
 }: EarningsChartProps) {
   return (
-    <div className="card" style={{ height: "400px", marginTop: "20px" }}>
-      <div style={{ marginBottom: "20px" }}>
+    <div className="card chart-card" style={{ marginTop: "20px" }}>
+      <div className="chart-card-header">
         <h3 className="font-heading" style={{ marginBottom: subtitle ? "6px" : 0 }}>{title}</h3>
         {subtitle ? (
           <p className="text-muted" style={{ margin: 0, fontSize: "0.9rem" }}>{subtitle}</p>
@@ -47,16 +48,15 @@ export function EarningsChart({
             dataKey="day"
             stroke="#9ca3af"
             fontSize={12}
+            minTickGap={24}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value) => {
-              const d = new Date(String(value));
-              return `${d.getDate()}/${d.getMonth() + 1}`;
-            }}
+            tickFormatter={(value) => formatDisplayDateKey(String(value), false)}
           />
           <YAxis
             stroke="#9ca3af"
             fontSize={12}
+            width={44}
             tickLine={false}
             axisLine={false}
             tickFormatter={(value) => `${(Number(value) / 1000000).toFixed(1)}M`}
@@ -76,16 +76,14 @@ export function EarningsChart({
                 lines.find((line) => line.key === label)?.label ?? label
               ];
             }}
-            labelFormatter={(value) => {
-              const d = new Date(String(value));
-              return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-            }}
+            labelFormatter={(value) => formatDisplayDateKey(String(value), true)}
           />
           {lines.length > 1 ? (
             <Legend
               verticalAlign="top"
               height={40}
-              wrapperStyle={{ fontSize: "12px", paddingBottom: "10px" }}
+              iconSize={10}
+              wrapperStyle={{ fontSize: "12px", paddingBottom: "10px", lineHeight: "1.4" }}
             />
           ) : null}
           {lines.map((line) => (

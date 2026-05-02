@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { parseVNTDateTime } from "@/lib/calculations";
 
 export async function GET() {
   try {
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
         data: {
           userId,
           amount: Number(amount),
-          paidAt: new Date(paidAt),
+          paidAt: parseVNTDateTime(paidAt),
           note,
           commission: Number(commission),
           percentage: Number(percentage),

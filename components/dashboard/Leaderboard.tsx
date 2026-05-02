@@ -7,7 +7,7 @@ interface LeaderboardProps {
 
 export function Leaderboard({ data }: LeaderboardProps) {
   return (
-    <div className="card">
+    <div className="card leaderboard-card">
       <h3 className="font-heading" style={{ marginBottom: "20px" }}>Bảng xếp hạng cày Adena</h3>
       <div className="list-container">
         {data.map((item, index) => (
@@ -45,7 +45,7 @@ export function Leaderboard({ data }: LeaderboardProps) {
                 />
               </div>
             </div>
-            <div style={{ textAlign: "right" }}>
+            <div className="leaderboard-total">
               <div style={{ fontWeight: 800, color: "var(--accent)" }}>{formatNumber(item.totalAdena)}</div>
               <div className="text-muted" style={{ fontSize: "0.75rem" }}>Adena</div>
             </div>

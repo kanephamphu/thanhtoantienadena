@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { 
+import {
   ArrowLeft, 
   LogOut, 
   Coins, 
@@ -10,7 +10,7 @@ import {
   Clock,
   LayoutDashboard
 } from "lucide-react";
-import { formatCurrency, formatDateTime, formatNumber } from "@/lib/calculations";
+import { formatCurrency, formatDateTime, formatNumber, getSessionIncome } from "@/lib/calculations";
 import Link from "next/link";
 import { StatCard } from "@/components/dashboard/StatCard";
 
@@ -50,7 +50,7 @@ export default function UserDashboard() {
   if (!userData) return <div className="shell">Lỗi tải dữ liệu.</div>;
 
   const totalAdena = userData.sessions.reduce((sum: number, s: any) => sum + (s.endAdena - s.startAdena), 0);
-  const totalGross = userData.sessions.reduce((sum: number, s: any) => sum + ((s.endAdena - s.startAdena) / s.adenaUnit * s.adenaRate + (new Date(s.endAt).getTime() - new Date(s.startAt).getTime()) / 3600000 * s.hourlyRate), 0);
+  const totalGross = userData.sessions.reduce((sum: number, s: any) => sum + getSessionIncome(s), 0);
   const totalPaid = userData.payments.reduce((sum: number, p: any) => sum + p.amount, 0);
 
   return (
@@ -60,7 +60,7 @@ export default function UserDashboard() {
           <h1 style={{ fontSize: "2.5rem", margin: 0 }}>Chào, {userData.name}</h1>
           <p>Xem lại lịch sử cày Adena và tình trạng thanh toán cá nhân.</p>
         </div>
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div className="page-actions">
           <Link href="/">
             <button className="secondary"><LayoutDashboard size={18} /> Public View</button>
           </Link>
@@ -92,11 +92,11 @@ export default function UserDashboard() {
         />
       </section>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+      <div className="dashboard-two-column">
         <div className="card">
           <h3 className="font-heading">Lịch sử ca cày</h3>
-          <div style={{ marginTop: "20px", overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <div style={{ marginTop: "20px" }}>
+            <table className="mobile-table">
               <thead>
                 <tr className="text-muted" style={{ textAlign: "left", fontSize: "0.85rem" }}>
                   <th style={{ padding: "12px" }}>Bắt đầu</th>
@@ -107,9 +107,9 @@ export default function UserDashboard() {
               <tbody>
                 {userData.sessions.map((s: any) => (
                   <tr key={s.id} style={{ borderTop: "1px solid var(--panel-border)" }}>
-                    <td style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.startAt)}</td>
-                    <td style={{ padding: "12px" }}>{formatNumber(s.endAdena - s.startAdena)}</td>
-                    <td style={{ padding: "12px" }}>{formatCurrency((s.endAdena - s.startAdena) / s.adenaUnit * s.adenaRate + (new Date(s.endAt).getTime() - new Date(s.startAt).getTime()) / 3600000 * s.hourlyRate)}</td>
+                    <td data-label="Bắt đầu" style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.startAt)}</td>
+                    <td data-label="Adena" style={{ padding: "12px" }}>{formatNumber(s.endAdena - s.startAdena)}</td>
+                    <td data-label="Tiền công" style={{ padding: "12px" }}>{formatCurrency(getSessionIncome(s))}</td>
                   </tr>
                 ))}
               </tbody>
@@ -119,8 +119,8 @@ export default function UserDashboard() {
 
         <div className="card">
           <h3 className="font-heading">Lịch sử thanh toán</h3>
-          <div style={{ marginTop: "20px", overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <div style={{ marginTop: "20px" }}>
+            <table className="mobile-table">
               <thead>
                 <tr className="text-muted" style={{ textAlign: "left", fontSize: "0.85rem" }}>
                   <th style={{ padding: "12px" }}>Ngày nhận</th>
@@ -131,9 +131,9 @@ export default function UserDashboard() {
               <tbody>
                 {userData.payments.map((p: any) => (
                   <tr key={p.id} style={{ borderTop: "1px solid var(--panel-border)" }}>
-                    <td style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(p.paidAt)}</td>
-                    <td style={{ padding: "12px", color: "var(--success)", fontWeight: 700 }}>{formatCurrency(p.amount)}</td>
-                    <td style={{ padding: "12px", fontSize: "0.85rem" }} className="text-muted">{p.note}</td>
+                    <td data-label="Ngày nhận" style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(p.paidAt)}</td>
+                    <td data-label="Số tiền" style={{ padding: "12px", color: "var(--success)", fontWeight: 700 }}>{formatCurrency(p.amount)}</td>
+                    <td data-label="Ghi chú" style={{ padding: "12px", fontSize: "0.85rem" }} className="text-muted">{p.note}</td>
                   </tr>
                 ))}
                 {userData.payments.length === 0 && (

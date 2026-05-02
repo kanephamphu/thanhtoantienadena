@@ -10,7 +10,7 @@ interface StatCardProps {
 
 export function StatCard({ label, value, meta, icon: Icon, trend }: StatCardProps) {
   return (
-    <div className="card stat-card animate-fade-in">
+    <div className="card stat-card animate-fade-in public-stat-card">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <span className="stat-label">{label}</span>
         {Icon && <Icon className="text-muted" size={20} />}
