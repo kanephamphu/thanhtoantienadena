@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Adena Payroll Dashboard",
-  description: "Quản lý công cày Adena, thanh toán và bảng xếp hạng nhân viên."
+  description: "Quản lý công cày Adena, thanh toán và bảng xếp hạng Thành viên."
 };
 
 export default function RootLayout({

@@ -5,6 +5,7 @@ export const seedState: AppState = {
     defaultHourlyRate: 0,
     defaultAdenaRate: 25000,
     defaultAdenaUnit: 16666.6667,
+    defaultSharePercentage: 60,
     currency: "VND"
   },
   users: [
@@ -19,7 +20,7 @@ export const seedState: AppState = {
     },
     {
       id: "member-1",
-      name: "Nhân viên 01",
+      name: "Thành viên 01",
       username: "nv01",
       pin: "1111",
       role: "member",
@@ -28,7 +29,7 @@ export const seedState: AppState = {
     },
     {
       id: "member-2",
-      name: "Nhân viên 02",
+      name: "Thành viên 02",
       username: "nv02",
       pin: "2222",
       role: "member",
@@ -37,7 +38,7 @@ export const seedState: AppState = {
     },
     {
       id: "member-3",
-      name: "Nhân viên 03",
+      name: "Thành viên 03",
       username: "nv03",
       pin: "3333",
       role: "member",

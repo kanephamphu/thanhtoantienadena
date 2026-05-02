@@ -181,6 +181,12 @@ button.secondary {
   color: white;
 }
 
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* Tables / Lists */
 .list-container {
   display: flex;
@@ -217,6 +223,156 @@ button.secondary {
 .text-danger { color: var(--danger); }
 .text-muted { color: var(--muted); }
 
+.dashboard-toolbar {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.dashboard-filter-group {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  gap: 16px;
+  align-items: end;
+  width: min(100%, 860px);
+}
+
+.data-table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 14px 12px;
+  text-align: left;
+}
+
+.data-table thead th {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.data-table tbody tr {
+  border-top: 1px solid var(--panel-border);
+}
+
+.table-empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 32px 12px !important;
+}
+
+.payment-print-header {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+}
+
+.payment-print-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.payment-print-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.payment-print-note {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.payment-print-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.payment-print-metric {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.payment-print-metric strong {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.payment-print-metric.highlight {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(16, 185, 129, 0.14));
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.payment-print-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 28px;
+}
+
+.payment-print-table th,
+.payment-print-table td {
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.payment-print-table th {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.payment-print-subline {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.payment-print-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+  margin-top: 36px;
+}
+
+.payment-print-signature {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.payment-print-sign-line {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -245,3 +401,120 @@ button.secondary {
 .delay-1 { animation-delay: 0.1s; }
 .delay-2 { animation-delay: 0.2s; }
 .delay-3 { animation-delay: 0.3s; }
+
+@media print {
+  header, aside, .hero, .stats-grid, button, .rank-badge, Link {
+    display: none !important;
+  }
+  .shell {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+  .card {
+    border: none !important;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  table {
+    color: black !important;
+    border: 1px solid #ccc !important;
+  }
+  th, td {
+    border: 1px solid #ccc !important;
+    color: black !important;
+  }
+  .font-heading {
+    color: black !important;
+    margin-bottom: 20px !important;
+  }
+
+  body.print-receipt-mode {
+    background: white !important;
+  }
+
+  body.print-receipt-mode main,
+  body.print-receipt-mode header,
+  body.print-receipt-mode aside,
+  body.print-receipt-mode section > :not(.payment-print-modal) {
+    display: none !important;
+  }
+
+  body.print-receipt-mode .payment-print-modal {
+    position: static !important;
+    inset: auto !important;
+    padding: 0 !important;
+    display: block !important;
+    background: white !important;
+    backdrop-filter: none !important;
+  }
+
+  body.print-receipt-mode .payment-print-sheet {
+    max-width: none !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  body.print-receipt-mode .payment-print-sheet::before,
+  body.print-receipt-mode .payment-print-toolbar,
+  body.print-receipt-mode .payment-print-modal button {
+    display: none !important;
+  }
+
+  body.print-receipt-mode .payment-print-header,
+  body.print-receipt-mode .payment-print-note,
+  body.print-receipt-mode .payment-print-metric {
+    background: #f8fafc !important;
+    border: 1px solid #d7dee7 !important;
+    color: black !important;
+  }
+
+  body.print-receipt-mode .payment-print-table th,
+  body.print-receipt-mode .payment-print-table td,
+  body.print-receipt-mode .payment-print-label,
+  body.print-receipt-mode .payment-print-subline,
+  body.print-receipt-mode .payment-print-value,
+  body.print-receipt-mode .payment-print-metric strong {
+    color: black !important;
+  }
+
+  body.print-receipt-mode .payment-print-table th,
+  body.print-receipt-mode .payment-print-table td {
+    border-color: #d7dee7 !important;
+  }
+
+  body.print-receipt-mode .payment-print-sign-line {
+    border-color: #64748b !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-filter-group {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .payment-print-header,
+  .payment-print-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-filter-group {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-print-header,
+  .payment-print-summary,
+  .payment-print-footer {
+    grid-template-columns: 1fr;
+  }
+}

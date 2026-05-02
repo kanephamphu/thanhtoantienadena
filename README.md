@@ -1,12 +1,12 @@
 # Adena Payroll Dashboard
 
-MVP quản lý công cày Adena dành cho admin và nhân viên, sẵn sàng deploy lên Vercel.
+MVP quản lý công cày Adena dành cho admin và Thành viên, sẵn sàng deploy lên Vercel.
 
 ## Chức năng
 
 - Admin thêm tài khoản, thêm ca cày, nhập số Adena đầu/cuối, rate, lương giờ và ghi nhận thanh toán.
-- Nhân viên xem được tổng Adena đã kiếm, tổng tiền công, số tiền đã thanh toán và số còn lại.
-- Toàn bộ người dùng xem được biểu đồ Adena theo ngày, so sánh tuần và bảng xếp hạng nhân viên.
+- Thành viên xem được tổng Adena đã kiếm, tổng tiền công, số tiền đã thanh toán và số còn lại.
+- Toàn bộ người dùng xem được biểu đồ Adena theo ngày, so sánh tuần và bảng xếp hạng Thành viên.
 - Seed dữ liệu mẫu đã khớp bộ số bạn gửi.
 
 ## Công nghệ

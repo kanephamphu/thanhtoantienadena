@@ -13,7 +13,23 @@ export function Leaderboard({ data }: LeaderboardProps) {
         {data.map((item, index) => (
           <div key={item.userId} className="list-item animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
             <div className="rank-badge">{index + 1}</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <div style={{ 
+              width: "40px", 
+              height: "40px", 
+              borderRadius: "50%", 
+              overflow: "hidden", 
+              background: "rgba(255,255,255,0.1)",
+              flexShrink: 0
+            }}>
+              {item.avatar ? (
+                <img src={item.avatar} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <div style={{ width: "100%", height: "100%", display: "grid", placeItems: "center", fontSize: "0.9rem", fontWeight: 700 }}>
+                  {item.name.charAt(0)}
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: 1 }}>
               <span style={{ fontWeight: 700 }}>{item.name}</span>
               <span className="text-muted" style={{ fontSize: "0.8rem" }}>{item.team}</span>
               

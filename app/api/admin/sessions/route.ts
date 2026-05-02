@@ -13,10 +13,27 @@ export async function GET() {
   }
 }
 
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    
+    if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
+    
+    await prisma.workSession.delete({
+      where: { id }
+    });
+    
+    return NextResponse.json({ message: "Deleted" });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userId, startAt, endAt, hourlyRate, adenaRate, adenaUnit, startAdena, endAdena, note } = body;
+    const { userId, startAt, endAt, hourlyRate, adenaRate, adenaUnit, startAdena, endAdena, note, isPaid } = body;
     
     const session = await prisma.workSession.create({
       data: {
@@ -28,7 +45,8 @@ export async function POST(request: Request) {
         adenaUnit: Number(adenaUnit),
         startAdena: Number(startAdena),
         endAdena: Number(endAdena),
-        note
+        note,
+        isPaid: Boolean(isPaid)
       }
     });
     
@@ -36,5 +54,31 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Create Session Error:", error);
     return NextResponse.json({ error: "Failed to create session" }, { status: 500 });
+  }
+}
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, userId, startAt, endAt, hourlyRate, adenaRate, adenaUnit, startAdena, endAdena, note, isPaid } = body;
+    
+    const session = await prisma.workSession.update({
+      where: { id },
+      data: {
+        userId,
+        startAt: new Date(startAt),
+        endAt: new Date(endAt),
+        hourlyRate: Number(hourlyRate),
+        adenaRate: Number(adenaRate),
+        adenaUnit: Number(adenaUnit),
+        startAdena: Number(startAdena),
+        endAdena: Number(endAdena),
+        note,
+        isPaid: Boolean(isPaid)
+      }
+    });
+    
+    return NextResponse.json(session);
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to update" }, { status: 500 });
   }
 }

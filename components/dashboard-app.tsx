@@ -246,7 +246,7 @@ export function DashboardApp() {
 
   function addSession() {
     if (!sessionForm.userId) {
-      setErrorMessage("Chưa chọn nhân viên.");
+      setErrorMessage("Chưa chọn Thành viên.");
       return;
     }
 
@@ -394,7 +394,7 @@ export function DashboardApp() {
     <main className="shell">
       <section className="hero compact">
         <div>
-          <span className="badge">{isAdmin ? "Quyền admin" : "Tài khoản nhân viên"}</span>
+          <span className="badge">{isAdmin ? "Quyền admin" : "Tài khoản Thành viên"}</span>
           <h1>Dashboard công cày Adena</h1>
           <p>
             {currentUser.name} đang đăng nhập. Toàn bộ người dùng xem được bảng xếp hạng tuần, biểu đồ theo ngày; admin có thêm
@@ -409,7 +409,7 @@ export function DashboardApp() {
       </section>
 
       <section className="metrics-grid">
-        <Card title="Tổng Adena toàn đội" value={formatNumber(totalAdena)} meta={`${summaries.length} nhân viên đang hoạt động`} />
+        <Card title="Tổng Adena toàn đội" value={formatNumber(totalAdena)} meta={`${summaries.length} Thành viên đang hoạt động`} />
         <Card title="Tổng tiền công" value={formatCurrency(totalGross)} meta="Tính từ ca cày + rate hiện tại" />
         <Card title="Đã thanh toán" value={formatCurrency(totalPaid)} meta={formatCurrency(totalGross - totalPaid) + " còn lại"} />
         <Card title="Bảng xếp hạng tuần" value={weeklyRanking[0]?.name ?? "Chưa có"} meta={`${formatNumber(weeklyRanking[0]?.totalAdena ?? 0)} Adena`} />
@@ -479,7 +479,7 @@ export function DashboardApp() {
           <div className="section-heading">
             <div>
               <span className="eyebrow">Bảng xếp hạng</span>
-              <h2>Xếp hạng nhân viên cày</h2>
+              <h2>Xếp hạng Thành viên cày</h2>
             </div>
           </div>
           <div className="ranking-list">
@@ -541,7 +541,7 @@ export function DashboardApp() {
             </div>
             <div className="form-grid">
               <label>
-                Nhân viên
+                Thành viên
                 <select value={sessionForm.userId} onChange={(event) => setSessionForm((current) => ({ ...current, userId: event.target.value }))}>
                   {state.users
                     .filter((user) => user.role === "member")
@@ -630,7 +630,7 @@ export function DashboardApp() {
             </div>
             <div className="form-grid">
               <label>
-                Nhân viên
+                Thành viên
                 <select value={paymentForm.userId} onChange={(event) => setPaymentForm((current) => ({ ...current, userId: event.target.value }))}>
                   {state.users
                     .filter((user) => user.role === "member")
@@ -692,7 +692,7 @@ export function DashboardApp() {
               <label>
                 Quyền
                 <select value={userForm.role} onChange={(event) => setUserForm((current) => ({ ...current, role: event.target.value as Role }))}>
-                  <option value="member">Nhân viên</option>
+                  <option value="member">Thành viên</option>
                   <option value="admin">Admin</option>
                 </select>
               </label>
@@ -752,7 +752,7 @@ export function DashboardApp() {
         </div>
         <div className="session-table">
           <div className="session-row session-header wide">
-            <span>Nhân viên</span>
+            <span>Thành viên</span>
             <span>Bắt đầu</span>
             <span>Kết thúc</span>
             <span>Giờ</span>

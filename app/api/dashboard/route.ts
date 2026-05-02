@@ -3,29 +3,64 @@ import { prisma } from "@/lib/prisma";
 import { 
   buildUserSummaries, 
   buildDailySeries, 
+  buildUserDailyData,
   buildWeeklyRanking, 
   buildLeaderboardDelta 
 } from "@/lib/calculations";
 
-export async function GET() {
+function parseStartOfDay(value: string) {
+  const date = new Date(`${value}T00:00:00`);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function parseEndOfDay(value: string) {
+  const date = new Date(`${value}T00:00:00`);
+  date.setHours(23, 59, 59, 999);
+  return date;
+}
+
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
+    const fromDate = from ? parseStartOfDay(from) : null;
+    const toDate = to ? parseEndOfDay(to) : null;
+
+    const dateFilter = fromDate && toDate
+      ? {
+          startAt: {
+            gte: fromDate,
+            lte: toDate
+          }
+        }
+      : {};
+
+    const paymentFilter = fromDate && toDate
+      ? {
+          paidAt: {
+            gte: fromDate,
+            lte: toDate
+          }
+        }
+      : {};
+    
     const users = await prisma.user.findMany({
       where: { active: true },
     });
     
     const sessions = await prisma.workSession.findMany({
+      where: dateFilter,
       orderBy: { startAt: "desc" },
     });
     
     const payments = await prisma.paymentRecord.findMany({
+      where: paymentFilter,
       orderBy: { paidAt: "desc" },
     });
     
     const settings = await prisma.globalSetting.findMany();
-    
-    // Convert DB models to the types expected by calculations
-    // We need to convert Dates to strings for the existing calculation logic if it expects strings
-    // Actually existing types.ts uses string for dates. Let's check lib/types.ts again.
     
     const appState = {
       users: users.map(u => ({
@@ -33,6 +68,7 @@ export async function GET() {
         name: u.name,
         username: u.username,
         pin: u.pin,
+        avatar: u.avatar ?? undefined,
         role: u.role as any,
         team: u.team,
         active: u.active
@@ -60,18 +96,23 @@ export async function GET() {
         defaultHourlyRate: Number(settings.find(s => s.key === "defaultHourlyRate")?.value) || 20000,
         defaultAdenaRate: Number(settings.find(s => s.key === "defaultAdenaRate")?.value) || 25000,
         defaultAdenaUnit: Number(settings.find(s => s.key === "defaultAdenaUnit")?.value) || 16666.67,
+        defaultSharePercentage: Number(settings.find(s => s.key === "defaultSharePercentage")?.value) || 60,
         currency: "VND" as const
       }
     };
     
     const summaries = buildUserSummaries(appState);
     const dailySeries = buildDailySeries(appState);
+    const userDailyData = buildUserDailyData(appState);
     const weeklyRanking = buildWeeklyRanking(appState);
     const leaderboard = buildLeaderboardDelta(appState);
     
     return NextResponse.json({
+      users: appState.users.filter(u => u.role === "member"),
+      settings: appState.settings,
       summaries,
       dailySeries,
+      userDailyData,
       weeklyRanking,
       leaderboard,
       totalStats: {

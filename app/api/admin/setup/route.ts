@@ -24,7 +24,8 @@ export async function GET() {
     const defaultSettings = [
       { key: "defaultHourlyRate", value: "20000" },
       { key: "defaultAdenaRate", value: "25000" },
-      { key: "defaultAdenaUnit", value: "16666.67" }
+      { key: "defaultAdenaUnit", value: "16666.67" },
+      { key: "defaultSharePercentage", value: "60" }
     ];
     
     for (const setting of defaultSettings) {
@@ -39,5 +40,29 @@ export async function GET() {
   } catch (error) {
     console.error("Setup Error:", error);
     return NextResponse.json({ error: "Setup failed" }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const settings = [
+      { key: "defaultHourlyRate", value: String(body.defaultHourlyRate) },
+      { key: "defaultAdenaRate", value: String(body.defaultAdenaRate) },
+      { key: "defaultAdenaUnit", value: String(body.defaultAdenaUnit) },
+      { key: "defaultSharePercentage", value: String(body.defaultSharePercentage) }
+    ];
+    
+    for (const setting of settings) {
+      await prisma.globalSetting.upsert({
+        where: { key: setting.key },
+        update: { value: setting.value },
+        create: setting
+      });
+    }
+    
+    return NextResponse.json({ message: "Settings updated" });
+  } catch (error) {
+    return NextResponse.json({ error: "Update failed" }, { status: 500 });
   }
 }

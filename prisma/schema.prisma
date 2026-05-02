@@ -12,6 +12,7 @@ model User {
   name          String
   username      String          @unique
   pin           String
+  avatar        String?         // Added avatar URL
   role          String          @default("member") // "admin" | "member"
   team          String          @default("General")
   active        Boolean         @default(true)
@@ -24,30 +25,38 @@ model User {
 model WorkSession {
   id          String   @id @default(cuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   startAt     DateTime
   endAt       DateTime
-  hourlyRate  Float
-  adenaRate   Float
-  adenaUnit   Float
+  hourlyRate  Float    @default(20000)
+  adenaRate   Float    @default(25000)
+  adenaUnit   Float    @default(16666.67)
   startAdena  Float
   endAdena    Float
   note        String?
-  createdAt   DateTime @default(now())
+  isPaid      Boolean  @default(false)
+  payments    PaymentRecord[] @relation("SessionPayments")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }
 
 model PaymentRecord {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  amount    Float
-  paidAt    DateTime
-  note      String?
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Float
+  paidAt      DateTime @default(now())
+  note        String?
+  commission  Float    @default(25000) // Now stores the rate per 10k Adena
+  percentage  Float    @default(60)    // Now stores the commission percentage
+  sessions    WorkSession[] @relation("SessionPayments")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }
 
 model GlobalSetting {
-  id    String @id @default(cuid())
-  key   String @unique
-  value String
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  updatedAt   DateTime @updatedAt
 }

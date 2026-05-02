@@ -8,6 +8,7 @@ export type User = {
   role: Role;
   team: string;
   active: boolean;
+  avatar?: string;
 };
 
 export type WorkSession = {
@@ -35,6 +36,7 @@ export type AppSettings = {
   defaultHourlyRate: number;
   defaultAdenaRate: number;
   defaultAdenaUnit: number;
+  defaultSharePercentage: number;
   currency: "VND";
 };
 
@@ -55,6 +57,7 @@ export type UserSummary = {
   paidAmount: number;
   remainingAmount: number;
   sessionCount: number;
+  avatar?: string;
 };
 
 export type DailySeriesItem = {
@@ -62,3 +65,5 @@ export type DailySeriesItem = {
   totalAdena: number;
   totalIncome: number;
 };
+
+export type UserDailySeriesMap = Record<string, DailySeriesItem[]>;

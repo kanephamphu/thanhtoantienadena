@@ -62,6 +62,7 @@ export function buildUserSummaries(state: AppState): UserSummary[] {
         userId: user.id,
         name: user.name,
         team: user.team,
+        avatar: user.avatar,
         totalAdena,
         totalHours,
         grossIncome,
@@ -90,6 +91,37 @@ export function buildDailySeries(state: AppState): DailySeriesItem[] {
   });
 
   return Array.from(dailyMap.values()).sort((left, right) => left.day.localeCompare(right.day));
+}
+
+export function buildUserDailyData(state: AppState) {
+  const userDailyMap = new Map<string, Map<string, DailySeriesItem>>();
+
+  state.sessions.forEach((session) => {
+    const userId = session.userId;
+    const day = session.startAt.slice(0, 10);
+    
+    if (!userDailyMap.has(userId)) {
+      userDailyMap.set(userId, new Map());
+    }
+    
+    const dayMap = userDailyMap.get(userId)!;
+    const current = dayMap.get(day) ?? {
+      day,
+      totalAdena: 0,
+      totalIncome: 0
+    };
+
+    current.totalAdena += getSessionAdena(session);
+    current.totalIncome += getSessionIncome(session);
+    dayMap.set(day, current);
+  });
+
+  const result: Record<string, DailySeriesItem[]> = {};
+  userDailyMap.forEach((dayMap, userId) => {
+    result[userId] = Array.from(dayMap.values()).sort((left, right) => left.day.localeCompare(right.day));
+  });
+  
+  return result;
 }
 
 export function buildWeeklyRanking(state: AppState) {
