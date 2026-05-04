@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { formatDisplayDateKey } from "@/lib/calculations";
 import {
   CartesianGrid,
@@ -32,6 +33,18 @@ export function EarningsChart({
   title = "Hiệu suất cày Adena (Theo ngày)",
   subtitle
 }: EarningsChartProps) {
+  const [isCompact, setIsCompact] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 640px)");
+    const updateCompactState = () => setIsCompact(mediaQuery.matches);
+
+    updateCompactState();
+    mediaQuery.addEventListener("change", updateCompactState);
+
+    return () => mediaQuery.removeEventListener("change", updateCompactState);
+  }, []);
+
   return (
     <div className="card chart-card" style={{ marginTop: "20px" }}>
       <div className="chart-card-header">
@@ -42,21 +55,21 @@ export function EarningsChart({
       </div>
 
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 12, right: 18, left: 4, bottom: 12 }}>
+        <LineChart data={data} margin={isCompact ? { top: 8, right: 6, left: -12, bottom: 4 } : { top: 12, right: 18, left: 4, bottom: 12 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
           <XAxis
             dataKey="day"
             stroke="#9ca3af"
-            fontSize={12}
-            minTickGap={24}
+            fontSize={isCompact ? 10 : 12}
+            minTickGap={isCompact ? 16 : 24}
             tickLine={false}
             axisLine={false}
             tickFormatter={(value) => formatDisplayDateKey(String(value), false)}
           />
           <YAxis
             stroke="#9ca3af"
-            fontSize={12}
-            width={44}
+            fontSize={isCompact ? 10 : 12}
+            width={isCompact ? 34 : 44}
             tickLine={false}
             axisLine={false}
             tickFormatter={(value) => `${(Number(value) / 1000000).toFixed(1)}M`}
@@ -78,7 +91,7 @@ export function EarningsChart({
             }}
             labelFormatter={(value) => formatDisplayDateKey(String(value), true)}
           />
-          {lines.length > 1 ? (
+          {lines.length > 1 && !isCompact ? (
             <Legend
               verticalAlign="top"
               height={40}
@@ -94,9 +107,9 @@ export function EarningsChart({
               name={line.label}
               stroke={line.color}
               strokeDasharray={line.dashArray}
-              strokeWidth={3}
-              dot={{ r: 3, strokeWidth: 0, fill: line.color }}
-              activeDot={{ r: 5, fill: line.color, stroke: "#0f172a", strokeWidth: 2 }}
+              strokeWidth={isCompact ? 2.5 : 3}
+              dot={{ r: isCompact ? 2 : 3, strokeWidth: 0, fill: line.color }}
+              activeDot={{ r: isCompact ? 4 : 5, fill: line.color, stroke: "#0f172a", strokeWidth: 2 }}
             />
           ))}
         </LineChart>
