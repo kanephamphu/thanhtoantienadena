@@ -299,7 +299,7 @@ export default function PublicDashboard() {
         />
       </section>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "20px" }}>
+      <div className="dashboard-main-grid">
         <section>
           <EarningsChart data={chartData} lines={chartLines} title={chartTitle} subtitle={chartSubtitle} />
 

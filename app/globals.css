@@ -139,6 +139,21 @@ input, select, textarea {
   width: 100%;
 }
 
+select {
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  background: #ffffff;
+  color: #111827;
+}
+
+select option:checked {
+  background: #f59e0b;
+  color: #111827;
+}
+
 input:focus, select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-glow);
@@ -240,13 +255,27 @@ button:disabled {
   width: min(100%, 860px);
 }
 
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.dashboard-chart-card {
+  height: 400px;
+  margin-top: 20px;
+}
+
 .data-table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 560px;
 }
 
 .data-table th,
@@ -497,6 +526,10 @@ button:disabled {
 }
 
 @media (max-width: 900px) {
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
+  }
+
   .dashboard-filter-group {
     grid-template-columns: 1fr 1fr;
   }
@@ -508,8 +541,93 @@ button:disabled {
 }
 
 @media (max-width: 640px) {
+  body {
+    background:
+      radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.1) 0%, transparent 34%),
+      var(--bg);
+  }
+
+  .shell {
+    padding: 20px 12px 32px;
+  }
+
+  .hero {
+    text-align: left;
+    margin-bottom: 28px;
+  }
+
+  .hero h1 {
+    font-size: 2.1rem;
+    line-height: 1.05;
+  }
+
+  .hero p {
+    font-size: 0.98rem;
+    margin: 0;
+  }
+
+  .card {
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-value {
+    font-size: 1.55rem;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .stat-meta {
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard-toolbar {
+    justify-content: stretch;
+    gap: 14px;
+    margin-top: 22px;
+  }
+
   .dashboard-filter-group {
     grid-template-columns: 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .dashboard-toolbar button,
+  .dashboard-toolbar a {
+    width: 100%;
+  }
+
+  .dashboard-main-grid {
+    gap: 14px;
+  }
+
+  .dashboard-chart-card {
+    height: 340px;
+    margin-top: 0;
+  }
+
+  .list-item {
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .list-item > :last-child {
+    grid-column: 2;
+    text-align: left !important;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 12px 10px;
+    white-space: nowrap;
   }
 
   .payment-print-header,

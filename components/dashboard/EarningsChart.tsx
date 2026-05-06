@@ -32,7 +32,7 @@ export function EarningsChart({
   subtitle
 }: EarningsChartProps) {
   return (
-    <div className="card" style={{ height: "400px", marginTop: "20px" }}>
+    <div className="card dashboard-chart-card">
       <div style={{ marginBottom: "20px" }}>
         <h3 className="font-heading" style={{ marginBottom: subtitle ? "6px" : 0 }}>{title}</h3>
         {subtitle ? (
