@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Plus,
   UserPlus,
@@ -27,6 +28,8 @@ import { useRouter } from "next/navigation";
 
 export default function AdminPage() {
   const router = useRouter();
+  const [hasMounted, setHasMounted] = useState(false);
+  const defaultDocumentTitleRef = useRef("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [pin, setPin] = useState("");
   const [users, setUsers] = useState<any[]>([]);
@@ -73,6 +76,11 @@ export default function AdminPage() {
     role: "member",
     team: ""
   });
+
+  useEffect(() => {
+    setHasMounted(true);
+    defaultDocumentTitleRef.current = document.title;
+  }, []);
 
   useEffect(() => {
     const userStr = localStorage.getItem("adena_user");
@@ -294,7 +302,7 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setMessage("Đã ghi nhận thanh toán và chốt ca cày!");
-        fetchSessions();
+        await Promise.all([fetchSessions(), fetchPayments()]);
         setSelectedSessions([]);
         setPaymentForm({ ...paymentForm, amount: 0, note: "" });
       }
@@ -314,6 +322,7 @@ export default function AdminPage() {
       user: users.find((user) => user.id === selectedEmployee),
       paidAt: paymentForm.paidAt,
       note: paymentForm.note,
+      commission: adenaRate10k,
       percentage: payPercentage,
       amount: finalAmount,
       sessions: selectedSessionsData
@@ -322,6 +331,11 @@ export default function AdminPage() {
 
   const handlePrintReceipt = () => {
     window.setTimeout(() => {
+      const previousTitle = document.title;
+      document.title = receiptPrintTitle;
+      window.addEventListener("afterprint", () => {
+        document.title = previousTitle || defaultDocumentTitleRef.current;
+      }, { once: true });
       window.print();
     }, 50);
   };
@@ -377,9 +391,24 @@ export default function AdminPage() {
     formElement?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const receiptTotalAdena = selectedPrintPayment?.sessions?.reduce((sum: number, session: any) => sum + (session.endAdena - session.startAdena), 0) ?? 0;
+  const receiptRate10k = Number(selectedPrintPayment?.commission ?? adenaRate10k) || 0;
+  const getReceiptSessionAdena = (session: any) => Math.max((session.endAdena ?? 0) - (session.startAdena ?? 0), 0);
+  const getReceiptSessionSubtotal = (session: any) => {
+    const sessionAdena = getReceiptSessionAdena(session);
+    if (receiptRate10k > 0) {
+      return (sessionAdena / 10000) * receiptRate10k;
+    }
+    return (sessionAdena / (session.adenaUnit || 10000)) * (session.adenaRate || 25000);
+  };
+  const receiptRateLabel = receiptRate10k > 0
+    ? `${formatCurrency(receiptRate10k)}/10k Adena`
+    : "Theo rate của từng ca";
+  const receiptPrintTitle = selectedPrintPayment
+    ? `Bang-luong-${(selectedPrintPayment.user?.name || "thanh-vien").trim().replace(/\s+/g, "-")}-${formatVNTDateTimeInput(selectedPrintPayment.paidAt).replace("T", "_")}`
+    : defaultDocumentTitleRef.current || "Bang-luong";
+  const receiptTotalAdena = selectedPrintPayment?.sessions?.reduce((sum: number, session: any) => sum + getReceiptSessionAdena(session), 0) ?? 0;
   const receiptGrossValue = selectedPrintPayment?.sessions?.reduce(
-    (sum: number, session: any) => sum + ((session.endAdena - session.startAdena) / (session.adenaUnit || 10000) * (session.adenaRate || 25000)),
+    (sum: number, session: any) => sum + getReceiptSessionSubtotal(session),
     0
   ) ?? 0;
 
@@ -758,7 +787,7 @@ export default function AdminPage() {
                         <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: 700 }}>{p.user?.name} - {formatCurrency(p.amount)}</div>
                           <div className="text-muted" style={{ fontSize: "0.8rem" }}>
-                            {formatDateTime(p.paidAt)} • {p.sessions?.length} ca làm • {p.percentage}% tỉ lệ
+                            {formatDateTime(p.paidAt)} • {p.sessions?.length} ca làm • {formatCurrency(p.commission || 0)}/10k • {p.percentage}% tỉ lệ
                           </div>
                           {p.note && <div style={{ fontSize: "0.75rem", fontStyle: "italic" }}>Ghi chú: {p.note}</div>}
                         </div>
@@ -775,116 +804,6 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Modal Chi tiết Thanh toán để In */}
-                {selectedPrintPayment && (
-                  <div
-                    className="payment-print-modal"
-                    style={{
-                      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-                      background: "rgba(0,0,0,0.85)", display: "grid", placeItems: "center",
-                      zIndex: 1000, padding: "20px", backdropFilter: "blur(5px)"
-                    }}
-                    onClick={() => setSelectedPrintPayment(null)}
-                  >
-                    <div
-                      className="card animate-fade-in payment-print-sheet"
-                      style={{ maxWidth: "860px", width: "100%", maxHeight: "90vh", overflowY: "auto", border: "1px solid var(--accent)" }}
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <div className="payment-print-toolbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", gap: "12px", flexWrap: "wrap" }}>
-                        <div>
-                          <div className="text-muted" style={{ fontSize: "0.8rem", letterSpacing: "0.08em", textTransform: "uppercase" }}>Phiếu thanh toán</div>
-                          <h2 className="font-heading" style={{ margin: "6px 0 0" }}>Bảng lương chi tiết</h2>
-                        </div>
-                        <div style={{ display: "flex", gap: "10px" }}>
-                          <button onClick={handlePrintReceipt} style={{ background: "var(--success)" }}>
-                            <Printer size={18} /> In bảng lương
-                          </button>
-                          <button onClick={() => setSelectedPrintPayment(null)} className="secondary">Đóng</button>
-                        </div>
-                      </div>
-                      <p className="text-muted" style={{ margin: "-10px 0 20px", fontSize: "0.85rem" }}>
-                        Khi lưu ra PDF xong, bạn có thể bấm <strong>Đóng</strong> để quay lại màn hình quản trị.
-                      </p>
-
-                      <div className="payment-print-header">
-                        <div>
-                          <div className="payment-print-label">Thành viên</div>
-                          <div className="payment-print-value">{selectedPrintPayment.user?.name}</div>
-                        </div>
-                        <div>
-                          <div className="payment-print-label">Ngày thanh toán</div>
-                          <div className="payment-print-value">{formatDateTime(selectedPrintPayment.paidAt)}</div>
-                        </div>
-                        <div>
-                          <div className="payment-print-label">Số ca chốt</div>
-                          <div className="payment-print-value">{selectedPrintPayment.sessions?.length ?? 0} ca</div>
-                        </div>
-                      </div>
-
-                      {selectedPrintPayment.note && (
-                        <div className="payment-print-note">
-                          <span className="payment-print-label">Ghi chú</span>
-                          <div>{selectedPrintPayment.note}</div>
-                        </div>
-                      )}
-
-                      <div className="payment-print-summary">
-                        <div className="payment-print-metric">
-                          <span className="payment-print-label">Tổng Adena</span>
-                          <strong>{formatNumber(receiptTotalAdena)}</strong>
-                        </div>
-                        <div className="payment-print-metric">
-                          <span className="payment-print-label">Giá trị Adena</span>
-                          <strong>{formatCurrency(receiptGrossValue)}</strong>
-                        </div>
-                        <div className="payment-print-metric">
-                          <span className="payment-print-label">Tỉ lệ thanh toán</span>
-                          <strong>{selectedPrintPayment.percentage}%</strong>
-                        </div>
-                        <div className="payment-print-metric highlight">
-                          <span className="payment-print-label">Thực nhận</span>
-                          <strong>{formatCurrency(selectedPrintPayment.amount)}</strong>
-                        </div>
-                      </div>
-
-                      <table className="payment-print-table">
-                        <thead>
-                          <tr>
-                            <th>Ca làm</th>
-                            <th>Adena</th>
-                            <th>Tạm tính</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedPrintPayment.sessions?.map((s: any) => (
-                            <tr key={s.id}>
-                              <td>
-                                <div>{formatDateTime(s.startAt)}</div>
-                                <div className="payment-print-subline">đến {formatDateTime(s.endAt)}</div>
-                              </td>
-                              <td>{formatNumber(s.endAdena - s.startAdena)}</td>
-                              <td style={{ textAlign: "right" }}>
-                                {formatCurrency((s.endAdena - s.startAdena) / (s.adenaUnit || 10000) * (s.adenaRate || 25000))}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-
-                      <div className="payment-print-footer">
-                        <div className="payment-print-signature">
-                          <span className="payment-print-label">Người lập phiếu</span>
-                          <div className="payment-print-sign-line" />
-                        </div>
-                        <div className="payment-print-signature">
-                          <span className="payment-print-label">Người nhận</span>
-                          <div className="payment-print-sign-line" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -1027,6 +946,121 @@ export default function AdminPage() {
           )}
         </section>
       </div>
+      {hasMounted && selectedPrintPayment && createPortal(
+        <div
+          className="payment-print-modal"
+          style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            background: "rgba(0,0,0,0.85)", display: "grid", placeItems: "center",
+            zIndex: 1000, padding: "20px", backdropFilter: "blur(5px)"
+          }}
+          onClick={() => setSelectedPrintPayment(null)}
+        >
+          <div
+            className="card animate-fade-in payment-print-sheet"
+            style={{ maxWidth: "860px", width: "100%", maxHeight: "90vh", overflowY: "auto", border: "1px solid var(--accent)" }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="payment-print-toolbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", gap: "12px", flexWrap: "wrap" }}>
+              <div>
+                <div className="text-muted" style={{ fontSize: "0.8rem", letterSpacing: "0.08em", textTransform: "uppercase" }}>Phiếu thanh toán</div>
+                <h2 className="font-heading" style={{ margin: "6px 0 0" }}>Bảng lương chi tiết</h2>
+              </div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button onClick={handlePrintReceipt} style={{ background: "var(--success)" }}>
+                  <Printer size={18} /> In bảng lương
+                </button>
+                <button onClick={() => setSelectedPrintPayment(null)} className="secondary">Đóng</button>
+              </div>
+            </div>
+            <p className="text-muted" style={{ margin: "-10px 0 20px", fontSize: "0.85rem" }}>
+              Khi lưu ra PDF xong, bạn có thể bấm <strong>Đóng</strong> để quay lại màn hình quản trị.
+            </p>
+
+            <div className="payment-print-header">
+              <div>
+                <div className="payment-print-label">Thành viên</div>
+                <div className="payment-print-value">{selectedPrintPayment.user?.name}</div>
+              </div>
+              <div>
+                <div className="payment-print-label">Ngày thanh toán</div>
+                <div className="payment-print-value">{formatDateTime(selectedPrintPayment.paidAt)}</div>
+              </div>
+              <div>
+                <div className="payment-print-label">Số ca chốt</div>
+                <div className="payment-print-value">{selectedPrintPayment.sessions?.length ?? 0} ca</div>
+              </div>
+            </div>
+
+            {selectedPrintPayment.note && (
+              <div className="payment-print-note">
+                <span className="payment-print-label">Ghi chú</span>
+                <div>{selectedPrintPayment.note}</div>
+              </div>
+            )}
+
+            <div className="payment-print-summary">
+              <div className="payment-print-metric">
+                <span className="payment-print-label">Tổng Adena</span>
+                <strong>{formatNumber(receiptTotalAdena)}</strong>
+              </div>
+              <div className="payment-print-metric">
+                <span className="payment-print-label">Rate áp dụng</span>
+                <strong>{receiptRateLabel}</strong>
+              </div>
+              <div className="payment-print-metric">
+                <span className="payment-print-label">Giá trị Adena</span>
+                <strong>{formatCurrency(receiptGrossValue)}</strong>
+              </div>
+              <div className="payment-print-metric">
+                <span className="payment-print-label">Tỉ lệ thanh toán</span>
+                <strong>{selectedPrintPayment.percentage}%</strong>
+              </div>
+              <div className="payment-print-metric highlight">
+                <span className="payment-print-label">Thực nhận</span>
+                <strong>{formatCurrency(selectedPrintPayment.amount)}</strong>
+              </div>
+            </div>
+
+            <table className="payment-print-table">
+              <thead>
+                <tr>
+                  <th>Ca làm</th>
+                  <th>Adena</th>
+                  <th>Tạm tính</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedPrintPayment.sessions?.map((s: any) => (
+                  <tr key={s.id}>
+                    <td>
+                      <div>{formatDateTime(s.startAt)}</div>
+                      <div className="payment-print-subline">đến {formatDateTime(s.endAt)}</div>
+                    </td>
+                    <td>{formatNumber(getReceiptSessionAdena(s))}</td>
+                    <td style={{ textAlign: "right" }}>
+                      <div>{formatCurrency(getReceiptSessionSubtotal(s))}</div>
+                      <div className="payment-print-subline">Rate {receiptRateLabel}</div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="payment-print-footer">
+              <div className="payment-print-signature">
+                <span className="payment-print-label">Người lập phiếu</span>
+                <div className="payment-print-sign-line" />
+              </div>
+              <div className="payment-print-signature">
+                <span className="payment-print-label">Người nhận</span>
+                <div className="payment-print-sign-line" />
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </main>
   );
 }

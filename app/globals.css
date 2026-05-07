@@ -405,7 +405,7 @@ button:disabled {
 
 .payment-print-summary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
   gap: 14px;
   margin-bottom: 20px;
 }
@@ -644,6 +644,8 @@ button:disabled {
     box-shadow: none !important;
     background: white !important;
     color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   body.print-receipt-mode .payment-print-sheet::before,
