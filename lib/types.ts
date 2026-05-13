@@ -30,6 +30,7 @@ export type PaymentRecord = {
   amount: number;
   paidAt: string;
   note: string;
+  isTransferred: boolean;
 };
 
 export type AppSettings = {

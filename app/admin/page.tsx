@@ -108,6 +108,7 @@ export default function AdminPage() {
   const [message, setMessage] = useState("");
   const [payments, setPayments] = useState<any[]>([]);
   const [selectedPrintPayment, setSelectedPrintPayment] = useState<any>(null);
+  const [updatingTransferredPaymentId, setUpdatingTransferredPaymentId] = useState<string | null>(null);
   const [sessionHistoryPage, setSessionHistoryPage] = useState(1);
   const [unpaidSessionsPage, setUnpaidSessionsPage] = useState(1);
   const [paymentHistoryPage, setPaymentHistoryPage] = useState(1);
@@ -408,6 +409,7 @@ export default function AdminPage() {
           amount: finalAmount,
           commission: adenaRate10k,
           percentage: payPercentage,
+          isTransferred: false,
           sessionIds: selectedSessions
         }),
       });
@@ -419,6 +421,38 @@ export default function AdminPage() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTogglePaymentTransferred = async (paymentId: string, checked: boolean) => {
+    setUpdatingTransferredPaymentId(paymentId);
+
+    try {
+      const res = await fetch("/api/admin/payments", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: paymentId,
+          isTransferred: checked
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update transfer status");
+      }
+
+      const updatedPayment = await res.json();
+
+      setPayments((current) =>
+        current.map((payment) => (payment.id === paymentId ? updatedPayment : payment))
+      );
+      setSelectedPrintPayment((current: any) => (current?.id === paymentId ? updatedPayment : current));
+      setMessage(checked ? "Đã đánh dấu phiếu là đã chuyển tiền." : "Đã bỏ đánh dấu chuyển tiền.");
+    } catch (error) {
+      console.error(error);
+      alert("Không thể cập nhật trạng thái chuyển tiền. Vui lòng thử lại.");
+    } finally {
+      setUpdatingTransferredPaymentId(null);
     }
   };
 
@@ -923,7 +957,16 @@ export default function AdminPage() {
                           </div>
                           {p.note && <div style={{ fontSize: "0.75rem", fontStyle: "italic" }}>Ghi chú: {p.note}</div>}
                         </div>
-                        <div style={{ display: "flex", gap: "8px" }}>
+                        <div className="payment-history-actions" onClick={(e) => e.stopPropagation()}>
+                          <label className="payment-transfer-toggle">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(p.isTransferred)}
+                              disabled={updatingTransferredPaymentId === p.id}
+                              onChange={(e) => handleTogglePaymentTransferred(p.id, e.target.checked)}
+                            />
+                            <span>{p.isTransferred ? "Đã chuyển tiền" : "Chưa chuyển tiền"}</span>
+                          </label>
                           <button className="secondary" style={{ padding: "8px" }} onClick={(e) => { e.stopPropagation(); setSelectedPrintPayment(p); }}>
                             <Printer size={16} />
                           </button>

@@ -49,6 +49,7 @@ model PaymentRecord {
   note        String?
   commission  Float    @default(25000) // Now stores the rate per 10k Adena
   percentage  Float    @default(60)    // Now stores the commission percentage
+  isTransferred Boolean @default(false)
   sessions    WorkSession[] @relation("SessionPayments")
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt

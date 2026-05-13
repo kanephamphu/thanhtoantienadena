@@ -20,7 +20,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userId, amount, paidAt, note, commission, percentage, sessionIds } = body;
+    const { userId, amount, paidAt, note, commission, percentage, sessionIds, isTransferred } = body;
     
     // Create payment and link to sessions
     const payment = await prisma.$transaction(async (tx) => {
@@ -33,6 +33,7 @@ export async function POST(request: Request) {
           note,
           commission: Number(commission),
           percentage: Number(percentage),
+          isTransferred: Boolean(isTransferred),
           sessions: {
             connect: sessionIds.map((id: string) => ({ id }))
           }
@@ -56,5 +57,32 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Payment Error:", error);
     return NextResponse.json({ error: "Failed to record payment" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, isTransferred } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing payment ID" }, { status: 400 });
+    }
+
+    const payment = await prisma.paymentRecord.update({
+      where: { id },
+      data: {
+        isTransferred: Boolean(isTransferred)
+      },
+      include: {
+        user: true,
+        sessions: true
+      }
+    });
+
+    return NextResponse.json(payment);
+  } catch (error) {
+    console.error("Payment Update Error:", error);
+    return NextResponse.json({ error: "Failed to update payment" }, { status: 500 });
   }
 }

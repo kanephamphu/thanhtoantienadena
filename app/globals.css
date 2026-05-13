@@ -316,6 +316,35 @@ button:disabled {
   font-weight: 800;
 }
 
+.payment-history-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.payment-transfer-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.payment-transfer-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--success);
+  cursor: pointer;
+}
+
+.payment-transfer-toggle input:disabled {
+  cursor: not-allowed;
+}
+
 /* Utilities */
 .text-accent { color: var(--accent); }
 .text-success { color: var(--success); }
@@ -866,6 +895,11 @@ button:disabled {
   .page-actions button,
   .button-row button {
     width: 100%;
+  }
+
+  .payment-history-actions {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .pagination-actions {

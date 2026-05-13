@@ -90,14 +90,16 @@ export const seedState: AppState = {
       userId: "member-1",
       amount: 50000,
       paidAt: "2026-04-27T20:00:00+07:00",
-      note: "Tạm ứng đợt 1"
+      note: "Tạm ứng đợt 1",
+      isTransferred: true
     },
     {
       id: "payment-2",
       userId: "member-2",
       amount: 10000,
       paidAt: "2026-04-27T20:15:00+07:00",
-      note: "Đã thanh toán một phần"
+      note: "Đã thanh toán một phần",
+      isTransferred: false
     }
   ]
 };

@@ -288,7 +288,8 @@ export function DashboardApp() {
           userId: paymentForm.userId,
           amount: Number(paymentForm.amount) || 0,
           paidAt: `${paymentForm.paidAt}:00+07:00`,
-          note: paymentForm.note
+          note: paymentForm.note,
+          isTransferred: false
         },
         ...current.payments
       ]

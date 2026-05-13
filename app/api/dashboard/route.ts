@@ -80,7 +80,8 @@ export async function GET(request: Request) {
         userId: p.userId,
         amount: p.amount,
         paidAt: p.paidAt.toISOString(),
-        note: p.note || ""
+        note: p.note || "",
+        isTransferred: p.isTransferred
       })),
       settings: {
         defaultHourlyRate: Number(settings.find(s => s.key === "defaultHourlyRate")?.value) || 20000,
