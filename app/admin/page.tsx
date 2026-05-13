@@ -137,6 +137,9 @@ export default function AdminPage() {
 
   const filteredSessions = sessions.filter(s => s.userId === selectedEmployee);
   const unpaidSessions = filteredSessions.filter(s => !s.isPaid);
+  const allUnpaidSessionsSelected =
+    unpaidSessions.length > 0 &&
+    unpaidSessions.every(s => selectedSessions.includes(s.id));
 
   const selectedSessionsData = sessions.filter(s => selectedSessions.includes(s.id));
   const totalAdenaForPayroll = selectedSessionsData.reduce((sum, s) => sum + (s.endAdena - s.startAdena), 0);
@@ -151,6 +154,20 @@ export default function AdminPage() {
     }, 0),
     totalPaid: 0
   } : { totalAdena: 0, totalIncome: 0, totalPaid: 0 };
+
+  const handleToggleAllPayrollSessions = (checked: boolean) => {
+    setSelectedSessions(checked ? unpaidSessions.map(s => s.id) : []);
+  };
+
+  const handleTogglePayrollSession = (sessionId: string, checked: boolean) => {
+    setSelectedSessions(current => {
+      if (checked) {
+        return current.includes(sessionId) ? current : [...current, sessionId];
+      }
+
+      return current.filter(id => id !== sessionId);
+    });
+  };
 
   const [settingsForm, setSettingsForm] = useState({
     defaultHourlyRate: 20000,
@@ -673,15 +690,18 @@ export default function AdminPage() {
                     <table className="mobile-table">
                       <thead>
                         <tr className="text-muted" style={{ textAlign: "left", fontSize: "0.85rem" }}>
-                          <th style={{ padding: "12px", width: "40px" }}>
-                            <input
-                              type="checkbox"
-                              checked={unpaidSessions.length > 0 && selectedSessions.length === unpaidSessions.length}
-                              onChange={(e) => {
-                                if (e.target.checked) setSelectedSessions(unpaidSessions.map(s => s.id));
-                                else setSelectedSessions([]);
-                              }}
-                            />
+                          <th style={{ padding: "12px", width: "52px", textAlign: "center" }}>
+                            <label className="payroll-checkbox" title="Chọn tất cả ca chưa thanh toán">
+                              <input
+                                type="checkbox"
+                                checked={allUnpaidSessionsSelected}
+                                onChange={(e) => handleToggleAllPayrollSessions(e.target.checked)}
+                                disabled={unpaidSessions.length === 0}
+                              />
+                              <span aria-hidden="true">
+                                {allUnpaidSessionsSelected && <Check size={14} strokeWidth={3} />}
+                              </span>
+                            </label>
                           </th>
                           <th style={{ padding: "12px" }}>Thời gian</th>
                           <th style={{ padding: "12px" }}>Adena</th>
@@ -693,15 +713,17 @@ export default function AdminPage() {
                           const gross = getSessionIncome(s);
                           return (
                             <tr key={s.id} style={{ borderTop: "1px solid var(--panel-border)" }}>
-                              <td data-label="Chọn" style={{ padding: "12px" }}>
-                                <input
-                                  type="checkbox"
-                                  checked={selectedSessions.includes(s.id)}
-                                  onChange={(e) => {
-                                    if (e.target.checked) setSelectedSessions([...selectedSessions, s.id]);
-                                    else setSelectedSessions(selectedSessions.filter(id => id !== s.id));
-                                  }}
-                                />
+                              <td data-label="Chọn" style={{ padding: "12px", textAlign: "center" }}>
+                                <label className="payroll-checkbox" title="Chọn ca này">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedSessions.includes(s.id)}
+                                    onChange={(e) => handleTogglePayrollSession(s.id, e.target.checked)}
+                                  />
+                                  <span aria-hidden="true">
+                                    {selectedSessions.includes(s.id) && <Check size={14} strokeWidth={3} />}
+                                  </span>
+                                </label>
                               </td>
                               <td data-label="Thời gian" style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.startAt)} - {formatTime(s.endAt)}</td>
                               <td data-label="Adena" style={{ padding: "12px" }}>{formatNumber(s.endAdena - s.startAdena)}</td>
