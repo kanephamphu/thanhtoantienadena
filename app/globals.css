@@ -617,6 +617,34 @@ button:disabled {
   gap: 16px;
 }
 
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--panel-border);
+}
+
+.pagination-summary {
+  font-size: 0.85rem;
+}
+
+.pagination-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pagination-page-label {
+  min-width: 92px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -819,12 +847,14 @@ button:disabled {
   }
 
   .page-actions,
-  .button-row {
+  .button-row,
+  .pagination-bar {
     flex-direction: column;
   }
 
   .page-actions > *,
-  .button-row > * {
+  .button-row > *,
+  .pagination-bar > * {
     width: 100%;
   }
 
@@ -836,6 +866,15 @@ button:disabled {
   .page-actions button,
   .button-row button {
     width: 100%;
+  }
+
+  .pagination-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .pagination-page-label {
+    min-width: 0;
   }
 
   .dashboard-toolbar {

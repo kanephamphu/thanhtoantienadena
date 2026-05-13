@@ -26,6 +26,71 @@ import Link from "next/link";
 
 import { useRouter } from "next/navigation";
 
+const ADMIN_LIST_PAGE_SIZE = 10;
+
+function paginateItems<T>(items: T[], currentPage: number, pageSize = ADMIN_LIST_PAGE_SIZE) {
+  const totalPages = Math.max(Math.ceil(items.length / pageSize), 1);
+  const safePage = Math.min(Math.max(currentPage, 1), totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+
+  return {
+    currentPage: safePage,
+    totalPages,
+    startIndex,
+    endIndex: Math.min(startIndex + pageSize, items.length),
+    items: items.slice(startIndex, startIndex + pageSize)
+  };
+}
+
+function PaginationControls({
+  currentPage,
+  totalPages,
+  totalItems,
+  startIndex,
+  endIndex,
+  onPageChange
+}: {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  startIndex: number;
+  endIndex: number;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalItems === 0 || totalPages <= 1) {
+    return null;
+  }
+
+  return (
+    <div className="pagination-bar">
+      <div className="pagination-summary text-muted">
+        Hiển thị {startIndex + 1}-{endIndex} / {totalItems}
+      </div>
+      <div className="pagination-actions">
+        <button
+          type="button"
+          className="secondary"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Trước
+        </button>
+        <span className="pagination-page-label">
+          Trang {currentPage}/{totalPages}
+        </span>
+        <button
+          type="button"
+          className="secondary"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Sau
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [hasMounted, setHasMounted] = useState(false);
@@ -43,6 +108,9 @@ export default function AdminPage() {
   const [message, setMessage] = useState("");
   const [payments, setPayments] = useState<any[]>([]);
   const [selectedPrintPayment, setSelectedPrintPayment] = useState<any>(null);
+  const [sessionHistoryPage, setSessionHistoryPage] = useState(1);
+  const [unpaidSessionsPage, setUnpaidSessionsPage] = useState(1);
+  const [paymentHistoryPage, setPaymentHistoryPage] = useState(1);
 
   // Forms State
   const [sessionForm, setSessionForm] = useState({
@@ -140,6 +208,9 @@ export default function AdminPage() {
   const allUnpaidSessionsSelected =
     unpaidSessions.length > 0 &&
     unpaidSessions.every(s => selectedSessions.includes(s.id));
+  const paginatedSessionHistory = paginateItems(filteredSessions, sessionHistoryPage);
+  const paginatedUnpaidSessions = paginateItems(unpaidSessions, unpaidSessionsPage);
+  const paginatedPayments = paginateItems(payments, paymentHistoryPage);
 
   const selectedSessionsData = sessions.filter(s => selectedSessions.includes(s.id));
   const totalAdenaForPayroll = selectedSessionsData.reduce((sum, s) => sum + (s.endAdena - s.startAdena), 0);
@@ -181,6 +252,29 @@ export default function AdminPage() {
       fetchSettings();
     }
   }, [isAdmin]);
+
+  useEffect(() => {
+    setSessionHistoryPage(1);
+    setUnpaidSessionsPage(1);
+  }, [selectedEmployee]);
+
+  useEffect(() => {
+    if (sessionHistoryPage > paginatedSessionHistory.totalPages) {
+      setSessionHistoryPage(paginatedSessionHistory.totalPages);
+    }
+  }, [sessionHistoryPage, paginatedSessionHistory.totalPages]);
+
+  useEffect(() => {
+    if (unpaidSessionsPage > paginatedUnpaidSessions.totalPages) {
+      setUnpaidSessionsPage(paginatedUnpaidSessions.totalPages);
+    }
+  }, [unpaidSessionsPage, paginatedUnpaidSessions.totalPages]);
+
+  useEffect(() => {
+    if (paymentHistoryPage > paginatedPayments.totalPages) {
+      setPaymentHistoryPage(paginatedPayments.totalPages);
+    }
+  }, [paymentHistoryPage, paginatedPayments.totalPages]);
 
   useEffect(() => {
     document.body.classList.toggle("print-receipt-mode", Boolean(selectedPrintPayment));
@@ -615,7 +709,7 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredSessions.map(s => (
+                      {paginatedSessionHistory.items.map(s => (
                         <tr key={s.id} style={{ borderTop: "1px solid var(--panel-border)" }}>
                           <td data-label="Bắt đầu" style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.startAt)}</td>
                           <td data-label="Kết thúc" style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.endAt)}</td>
@@ -655,6 +749,14 @@ export default function AdminPage() {
                       )}
                     </tbody>
                   </table>
+                  <PaginationControls
+                    currentPage={paginatedSessionHistory.currentPage}
+                    totalPages={paginatedSessionHistory.totalPages}
+                    totalItems={filteredSessions.length}
+                    startIndex={paginatedSessionHistory.startIndex}
+                    endIndex={paginatedSessionHistory.endIndex}
+                    onPageChange={setSessionHistoryPage}
+                  />
                 </div>
               </div>
             </div>
@@ -707,9 +809,9 @@ export default function AdminPage() {
                           <th style={{ padding: "12px" }}>Adena</th>
                           <th style={{ padding: "12px" }}>Gross Income</th>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {unpaidSessions.map(s => {
+                    </thead>
+                    <tbody>
+                        {paginatedUnpaidSessions.items.map(s => {
                           const gross = getSessionIncome(s);
                           return (
                             <tr key={s.id} style={{ borderTop: "1px solid var(--panel-border)" }}>
@@ -738,6 +840,14 @@ export default function AdminPage() {
                         )}
                       </tbody>
                     </table>
+                    <PaginationControls
+                      currentPage={paginatedUnpaidSessions.currentPage}
+                      totalPages={paginatedUnpaidSessions.totalPages}
+                      totalItems={unpaidSessions.length}
+                      startIndex={paginatedUnpaidSessions.startIndex}
+                      endIndex={paginatedUnpaidSessions.endIndex}
+                      onPageChange={setUnpaidSessionsPage}
+                    />
                   </div>
                 </div>
 
@@ -801,7 +911,7 @@ export default function AdminPage() {
                 <div className="card" style={{ marginTop: "24px" }}>
                   <h3 className="font-heading"><History size={18} /> Lịch sử thanh toán</h3>
                   <div style={{ marginTop: "20px" }} className="list-container">
-                    {payments.map(p => (
+                    {paginatedPayments.items.map(p => (
                       <div key={p.id} className="list-item" style={{ cursor: "pointer" }} onClick={() => setSelectedPrintPayment(p)}>
                         <div className="rank-badge" style={{ background: "var(--success)" }}>
                           <Check size={14} />
@@ -824,6 +934,14 @@ export default function AdminPage() {
                       <div className="text-muted" style={{ padding: "40px", textAlign: "center" }}>Chưa có lịch sử thanh toán.</div>
                     )}
                   </div>
+                  <PaginationControls
+                    currentPage={paginatedPayments.currentPage}
+                    totalPages={paginatedPayments.totalPages}
+                    totalItems={payments.length}
+                    startIndex={paginatedPayments.startIndex}
+                    endIndex={paginatedPayments.endIndex}
+                    onPageChange={setPaymentHistoryPage}
+                  />
                 </div>
 
               </div>
