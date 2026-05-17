@@ -8,7 +8,8 @@ import {
   Coins, 
   CreditCard, 
   Clock,
-  LayoutDashboard
+  LayoutDashboard,
+  ExternalLink
 } from "lucide-react";
 import { formatCurrency, formatDateTime, formatNumber, getSessionIncome } from "@/lib/calculations";
 import Link from "next/link";
@@ -64,6 +65,9 @@ export default function UserDashboard() {
           <Link href="/">
             <button className="secondary"><LayoutDashboard size={18} /> Public View</button>
           </Link>
+          <a href="https://chogem.com/trends?game=lineage_classic&server=24613" target="_blank" rel="noopener noreferrer">
+            <button className="secondary"><ExternalLink size={18} /> Xem coins</button>
+          </a>
           <button onClick={handleLogout} className="secondary" style={{ color: "var(--danger)" }}>
             <LogOut size={18} /> Đăng xuất
           </button>
@@ -102,14 +106,20 @@ export default function UserDashboard() {
                   <th style={{ padding: "12px" }}>Bắt đầu</th>
                   <th style={{ padding: "12px" }}>Adena</th>
                   <th style={{ padding: "12px" }}>Tiền công</th>
+                  <th style={{ padding: "12px" }}>Trạng thái</th>
                 </tr>
               </thead>
               <tbody>
                 {userData.sessions.map((s: any) => (
-                  <tr key={s.id} style={{ borderTop: "1px solid var(--panel-border)" }}>
+                  <tr key={s.id} className={s.isPaid ? "session-row-paid" : "session-row-unpaid"}>
                     <td data-label="Bắt đầu" style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.startAt)}</td>
                     <td data-label="Adena" style={{ padding: "12px" }}>{formatNumber(s.endAdena - s.startAdena)}</td>
                     <td data-label="Tiền công" style={{ padding: "12px" }}>{formatCurrency(getSessionIncome(s))}</td>
+                    <td data-label="Trạng thái" style={{ padding: "12px" }}>
+                      <span className={`rank-badge ${s.isPaid ? "success" : "warning"}`} style={{ width: "auto", fontSize: "0.7rem", padding: "2px 8px" }}>
+                        {s.isPaid ? "ĐÃ TRẢ" : "CHƯA TRẢ"}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>

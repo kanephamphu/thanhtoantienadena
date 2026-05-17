@@ -315,6 +315,33 @@ button:disabled {
   color: var(--accent);
   font-weight: 800;
 }
+.session-row-paid {
+  border-top: 1px solid rgba(16, 185, 129, 0.28);
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.13), rgba(16, 185, 129, 0.035));
+}
+
+.session-row-unpaid {
+  border-top: 1px solid rgba(245, 158, 11, 0.32);
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.14), rgba(245, 158, 11, 0.035));
+}
+
+.session-row-paid:hover,
+.session-row-unpaid:hover {
+  filter: brightness(1.08);
+}
+
+.rank-badge.success {
+  background: rgba(16, 185, 129, 0.16);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.32);
+}
+
+.rank-badge.warning {
+  background: rgba(245, 158, 11, 0.18);
+  color: var(--accent);
+  border: 1px solid rgba(245, 158, 11, 0.34);
+}
+
 
 .payment-history-actions {
   display: flex;

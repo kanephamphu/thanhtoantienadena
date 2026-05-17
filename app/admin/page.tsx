@@ -744,7 +744,7 @@ export default function AdminPage() {
                     </thead>
                     <tbody>
                       {paginatedSessionHistory.items.map(s => (
-                        <tr key={s.id} style={{ borderTop: "1px solid var(--panel-border)" }}>
+                        <tr key={s.id} className={s.isPaid ? "session-row-paid" : "session-row-unpaid"}>
                           <td data-label="Bắt đầu" style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.startAt)}</td>
                           <td data-label="Kết thúc" style={{ padding: "12px", fontSize: "0.85rem" }}>{formatDateTime(s.endAt)}</td>
                           <td data-label="Adena" style={{ padding: "12px" }}>{formatNumber(s.endAdena - s.startAdena)}</td>
@@ -848,7 +848,7 @@ export default function AdminPage() {
                         {paginatedUnpaidSessions.items.map(s => {
                           const gross = getSessionIncome(s);
                           return (
-                            <tr key={s.id} style={{ borderTop: "1px solid var(--panel-border)" }}>
+                            <tr key={s.id} className="session-row-unpaid">
                               <td data-label="Chọn" style={{ padding: "12px", textAlign: "center" }}>
                                 <label className="payroll-checkbox" title="Chọn ca này">
                                   <input

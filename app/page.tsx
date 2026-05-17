@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, Coins, Download, TrendingUp, Users } from "lucide-react";
+import { ChevronRight, Coins, Download, ExternalLink, TrendingUp, Users } from "lucide-react";
 import { EarningsChart } from "@/components/dashboard/EarningsChart";
 import { Leaderboard } from "@/components/dashboard/Leaderboard";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -256,6 +256,11 @@ export default function PublicDashboard() {
                 Đăng nhập <ChevronRight size={18} />
               </button>
             </Link>
+            <a href="https://chogem.com/trends?game=lineage_classic&server=24613" target="_blank" rel="noopener noreferrer">
+              <button className="secondary" style={{ padding: "10px 20px" }}>
+                Xem coins <ExternalLink size={18} />
+              </button>
+            </a>
             <Link href="/admin">
               <button className="secondary" style={{ padding: "10px 20px" }}>
                 Admin
