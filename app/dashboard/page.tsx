@@ -62,11 +62,14 @@ export default function UserDashboard() {
           <p>Xem lại lịch sử cày Adena và tình trạng thanh toán cá nhân.</p>
         </div>
         <div className="page-actions">
-          <Link href="/">
-            <button className="secondary"><LayoutDashboard size={18} /> Public View</button>
-          </Link>
-          <a href="https://chogem.com/trends?game=lineage_classic&server=24613" target="_blank" rel="noopener noreferrer">
-            <button className="secondary"><ExternalLink size={18} /> Xem coins</button>
+          <Link href="/" className="button-link secondary"><LayoutDashboard size={18} /> Public View</Link>
+          <a
+            href="https://chogem.com/trends?game=lineage_classic&server=24613"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="button-link secondary"
+          >
+            <ExternalLink size={18} /> Xem coins
           </a>
           <button onClick={handleLogout} className="secondary" style={{ color: "var(--danger)" }}>
             <LogOut size={18} /> Đăng xuất

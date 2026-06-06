@@ -251,20 +251,20 @@ export default function PublicDashboard() {
           </div>
 
           <div className="page-actions public-cta-row">
-            <Link href="/login">
-              <button style={{ padding: "10px 20px" }}>
-                Đăng nhập <ChevronRight size={18} />
-              </button>
+            <Link href="/login" className="button-link" style={{ padding: "10px 20px" }}>
+              Đăng nhập <ChevronRight size={18} />
             </Link>
-            <a href="https://chogem.com/trends?game=lineage_classic&server=24613" target="_blank" rel="noopener noreferrer">
-              <button className="secondary" style={{ padding: "10px 20px" }}>
-                Xem coins <ExternalLink size={18} />
-              </button>
+            <a
+              href="https://chogem.com/trends?game=lineage_classic&server=24613"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="button-link secondary"
+              style={{ padding: "10px 20px" }}
+            >
+              Xem coins <ExternalLink size={18} />
             </a>
-            <Link href="/admin">
-              <button className="secondary" style={{ padding: "10px 20px" }}>
-                Admin
-              </button>
+            <Link href="/admin" className="button-link secondary" style={{ padding: "10px 20px" }}>
+              Admin
             </Link>
           </div>
         </div>

@@ -563,10 +563,8 @@ export default function AdminPage() {
         <div className="card animate-fade-in" style={{ width: "100%", maxWidth: "400px" }}>
           <h2 className="font-heading" style={{ textAlign: "center", marginBottom: "24px" }}>Admin Access</h2>
           <p className="text-muted" style={{ textAlign: "center", marginBottom: "20px" }}>Vui lòng đăng nhập từ trang login chính thức.</p>
-          <Link href="/login" style={{ width: "100%" }}>
-            <button style={{ width: "100%" }}>
-              Đi tới trang Đăng nhập
-            </button>
+          <Link href="/login" className="button-link" style={{ width: "100%" }}>
+            Đi tới trang Đăng nhập
           </Link>
           <div style={{ marginTop: "20px", textAlign: "center" }}>
             <Link href="/" className="text-muted" style={{ fontSize: "0.9rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
@@ -589,9 +587,7 @@ export default function AdminPage() {
           <p>Quản lý thành viên, nhập liệu ca cày và đối soát thanh toán.</p>
         </div>
         <div className="page-actions">
-          <Link href="/">
-            <button className="secondary"><LayoutDashboard size={18} /> Public View</button>
-          </Link>
+          <Link href="/" className="button-link secondary"><LayoutDashboard size={18} /> Public View</Link>
           <button onClick={handleLogout} className="secondary" style={{ color: "var(--danger)" }}>
             <LogOut size={18} /> Đăng xuất
           </button>

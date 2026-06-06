@@ -40,9 +40,19 @@ export function EarningsChart({
     const updateCompactState = () => setIsCompact(mediaQuery.matches);
 
     updateCompactState();
-    mediaQuery.addEventListener("change", updateCompactState);
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", updateCompactState);
+    } else {
+      mediaQuery.addListener(updateCompactState);
+    }
 
-    return () => mediaQuery.removeEventListener("change", updateCompactState);
+    return () => {
+      if (typeof mediaQuery.removeEventListener === "function") {
+        mediaQuery.removeEventListener("change", updateCompactState);
+      } else {
+        mediaQuery.removeListener(updateCompactState);
+      }
+    };
   }, []);
 
   return (
@@ -54,7 +64,7 @@ export function EarningsChart({
         ) : null}
       </div>
 
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" debounce={160}>
         <LineChart data={data} margin={isCompact ? { top: 8, right: 6, left: -12, bottom: 4 } : { top: 12, right: 18, left: 4, bottom: 12 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
           <XAxis
@@ -108,6 +118,7 @@ export function EarningsChart({
               stroke={line.color}
               strokeDasharray={line.dashArray}
               strokeWidth={isCompact ? 2.5 : 3}
+              isAnimationActive={false}
               dot={{ r: isCompact ? 2 : 3, strokeWidth: 0, fill: line.color }}
               activeDot={{ r: isCompact ? 4 : 5, fill: line.color, stroke: "#0f172a", strokeWidth: 2 }}
             />
