@@ -15,7 +15,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, username, pin, avatar, role, team } = body;
+    const { name, username, pin, avatar, role, team, active } = body;
     
     const user = await prisma.user.create({
       data: {
@@ -24,7 +24,8 @@ export async function POST(request: Request) {
         pin,
         avatar,
         role: role || "member",
-        team: team || "General"
+        team: team || "General",
+        active: active ?? true
       } as any
     });
     
@@ -41,18 +42,21 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, name, username, pin, avatar, role, team } = body;
+    const { id, name, username, pin, avatar, role, team, active } = body;
+
+    const data: Record<string, unknown> = {};
+
+    if (name !== undefined) data.name = name;
+    if (username !== undefined) data.username = username;
+    if (pin !== undefined) data.pin = pin;
+    if (avatar !== undefined) data.avatar = avatar;
+    if (role !== undefined) data.role = role;
+    if (team !== undefined) data.team = team || "General";
+    if (active !== undefined) data.active = Boolean(active);
     
     const user = await prisma.user.update({
       where: { id },
-      data: {
-        name,
-        username,
-        pin,
-        avatar,
-        role,
-        team: team || "General"
-      } as any
+      data: data as any
     });
     
     return NextResponse.json(user);

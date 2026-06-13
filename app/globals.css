@@ -380,6 +380,34 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+.member-visibility-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.member-visibility-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.member-visibility-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--danger);
+  cursor: pointer;
+}
+
+.member-visibility-toggle input:disabled {
+  cursor: not-allowed;
+}
+
 .payment-transfer-toggle {
   display: inline-flex;
   align-items: center;
@@ -960,6 +988,11 @@ button:disabled {
   .payment-history-actions {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .member-visibility-column {
+    width: 100%;
+    align-items: flex-start;
   }
 
   .pagination-actions {

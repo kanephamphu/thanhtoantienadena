@@ -109,6 +109,7 @@ export default function AdminPage() {
   const [payments, setPayments] = useState<any[]>([]);
   const [selectedPrintPayment, setSelectedPrintPayment] = useState<any>(null);
   const [updatingTransferredPaymentId, setUpdatingTransferredPaymentId] = useState<string | null>(null);
+  const [updatingUserVisibilityId, setUpdatingUserVisibilityId] = useState<string | null>(null);
   const [sessionHistoryPage, setSessionHistoryPage] = useState(1);
   const [unpaidSessionsPage, setUnpaidSessionsPage] = useState(1);
   const [paymentHistoryPage, setPaymentHistoryPage] = useState(1);
@@ -143,7 +144,8 @@ export default function AdminPage() {
     pin: "",
     avatar: "",
     role: "member",
-    team: ""
+    team: "",
+    active: true
   });
 
   useEffect(() => {
@@ -498,7 +500,7 @@ export default function AdminPage() {
       if (res.ok) {
         setMessage(userForm.id ? "Đã cập nhật thành viên!" : "Đã tạo thành viên mới!");
         fetchUsers();
-        setUserForm({ id: "", name: "", username: "", pin: "", avatar: "", role: "member", team: "" });
+        setUserForm({ id: "", name: "", username: "", pin: "", avatar: "", role: "member", team: "", active: true });
       }
     } finally {
       setLoading(false);
@@ -529,11 +531,46 @@ export default function AdminPage() {
       pin: user.pin,
       avatar: user.avatar || "",
       role: user.role,
-      team: user.team || ""
+      team: user.team || "",
+      active: user.active
     });
     // Scroll to form
     const formElement = document.getElementById("user-form");
     formElement?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleToggleUserVisibility = async (user: any, shouldStayVisible: boolean) => {
+    setUpdatingUserVisibilityId(user.id);
+
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: user.id,
+          active: shouldStayVisible
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to update member visibility");
+      }
+
+      const updatedUser = await res.json();
+
+      setUsers((current) => current.map((item) => (item.id === user.id ? updatedUser : item)));
+      setUserForm((current) => (current.id === user.id ? { ...current, active: updatedUser.active } : current));
+      setMessage(
+        updatedUser.active
+          ? `Đã hiện lại ${updatedUser.name} trên dashboard.`
+          : `Đã ẩn ${updatedUser.name} khỏi dashboard.`
+      );
+    } catch (error) {
+      console.error(error);
+      alert("Không thể cập nhật trạng thái hiển thị của thành viên. Vui lòng thử lại.");
+    } finally {
+      setUpdatingUserVisibilityId(null);
+    }
   };
 
   const receiptRate10k = Number(selectedPrintPayment?.commission ?? adenaRate10k) || 0;
@@ -1020,7 +1057,7 @@ export default function AdminPage() {
                       <button
                         type="button"
                         className="secondary"
-                        onClick={() => setUserForm({ id: "", name: "", username: "", pin: "", avatar: "", role: "member", team: "" })}
+                        onClick={() => setUserForm({ id: "", name: "", username: "", pin: "", avatar: "", role: "member", team: "", active: true })}
                         style={{ flex: 1 }}
                       >
                         Hủy
@@ -1051,7 +1088,22 @@ export default function AdminPage() {
                         <div style={{ fontWeight: 700 }}>{user.name}</div>
                         <div className="text-muted" style={{ fontSize: "0.8rem" }}>@{user.username} • {user.team}</div>
                       </div>
-                      <div className="text-muted">{user.role.toUpperCase()}</div>
+                      <div className="member-visibility-column">
+                        <div className="text-muted">{user.role.toUpperCase()}</div>
+                        {user.role === "member" ? (
+                          <label className="member-visibility-toggle">
+                            <input
+                              type="checkbox"
+                              checked={!user.active}
+                              disabled={updatingUserVisibilityId === user.id}
+                              onChange={(event) => handleToggleUserVisibility(user, !event.target.checked)}
+                            />
+                            <span>{user.active ? "Đang hiện" : "Đã ẩn"}</span>
+                          </label>
+                        ) : (
+                          <div className="text-muted" style={{ fontSize: "0.75rem" }}>Admin</div>
+                        )}
+                      </div>
                       <div style={{ display: "flex", gap: "8px" }}>
                         <button
                           onClick={() => handleEditUser(user)}
